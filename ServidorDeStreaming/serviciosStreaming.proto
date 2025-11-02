@@ -1,0 +1,33 @@
+
+syntax = "proto3";
+
+package servicios;
+option go_package = "/serviciosStreaming";
+
+service AudioService {
+  /* Función de streaming de canción */
+  rpc enviarCancionMedianteStream(peticionDTO) returns (stream FragmentoCancion);
+  rpc stremearCancion(CancionDTO) returns (stream FragmentoCancion);
+}
+
+// Mensajes
+message peticionDTO {
+    int32 Id = 1;
+}
+
+message FragmentoCancion {
+  bytes data = 1; // Fragmento de audio
+}
+
+// MENSAJES
+message CancionDTO {
+  int32 Id = 1;
+  string Titulo = 2;
+  string Autor = 3;
+  string Album = 4;
+  int32 AnioLanzamiento = 5;
+  int32 DuracionS = 6;
+  string Genero = 7;
+  string Idioma = 8;
+  string RutaAlmacenamiento = 9;
+}
