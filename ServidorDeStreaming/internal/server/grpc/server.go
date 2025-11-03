@@ -5,9 +5,11 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	reproduccionesapi "musis.servidordestreaming/grpc-servidor/internal/clients/reproducciones_api"
 	"musis.servidordestreaming/grpc-servidor/internal/config"
 	grpccontrollers "musis.servidordestreaming/grpc-servidor/internal/grpc_controllers"
 	"musis.servidordestreaming/grpc-servidor/internal/server/interceptors"
+	"musis.servidordestreaming/grpc-servidor/internal/services"
 	pb "musis.servidordestreaming/grpc-servidor/serviciosStreaming"
 )
 
@@ -24,7 +26,10 @@ func NewServer(cfg config.Config) *Server {
     }
 
     grpcServer := grpc.NewServer(opts...)
-    pb.RegisterAudioServiceServer(grpcServer, &grpccontrollers.ControladorServidorAudio{})
+
+    apiReproducciones := reproduccionesapi.NewReproduccionesAPIClient(cfg)
+    audioService := services.NewAudioService(apiReproducciones)
+    pb.RegisterAudioServiceServer(grpcServer, grpccontrollers.NewControladorServidorAudio(audioService))
 
     return &Server{
         grpcServer: grpcServer,

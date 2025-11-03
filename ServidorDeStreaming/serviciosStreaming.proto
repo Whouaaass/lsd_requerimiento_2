@@ -7,7 +7,7 @@ option go_package = "/serviciosStreaming";
 service AudioService {
   /* Función de streaming de canción */
   rpc enviarCancionMedianteStream(peticionDTO) returns (stream FragmentoCancion);
-  rpc stremearCancion(CancionDTO) returns (stream FragmentoCancion);
+  rpc stremearCancion(PeticionStreamDTO) returns (stream FragmentoCancion);
 }
 
 // Mensajes
@@ -17,6 +17,11 @@ message peticionDTO {
 
 message FragmentoCancion {
   bytes data = 1; // Fragmento de audio
+}
+
+message PeticionStreamDTO {
+    int32 IdUsuario = 1;
+    CancionDTO Cancion = 2;
 }
 
 // MENSAJES

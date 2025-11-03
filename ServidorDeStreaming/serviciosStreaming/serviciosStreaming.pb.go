@@ -110,6 +110,58 @@ func (x *FragmentoCancion) GetData() []byte {
 	return nil
 }
 
+type PeticionStreamDTO struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IdUsuario     int32                  `protobuf:"varint,1,opt,name=IdUsuario,proto3" json:"IdUsuario,omitempty"`
+	Cancion       *CancionDTO            `protobuf:"bytes,2,opt,name=Cancion,proto3" json:"Cancion,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PeticionStreamDTO) Reset() {
+	*x = PeticionStreamDTO{}
+	mi := &file_serviciosStreaming_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PeticionStreamDTO) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PeticionStreamDTO) ProtoMessage() {}
+
+func (x *PeticionStreamDTO) ProtoReflect() protoreflect.Message {
+	mi := &file_serviciosStreaming_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PeticionStreamDTO.ProtoReflect.Descriptor instead.
+func (*PeticionStreamDTO) Descriptor() ([]byte, []int) {
+	return file_serviciosStreaming_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PeticionStreamDTO) GetIdUsuario() int32 {
+	if x != nil {
+		return x.IdUsuario
+	}
+	return 0
+}
+
+func (x *PeticionStreamDTO) GetCancion() *CancionDTO {
+	if x != nil {
+		return x.Cancion
+	}
+	return nil
+}
+
 // MENSAJES
 type CancionDTO struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
@@ -128,7 +180,7 @@ type CancionDTO struct {
 
 func (x *CancionDTO) Reset() {
 	*x = CancionDTO{}
-	mi := &file_serviciosStreaming_proto_msgTypes[2]
+	mi := &file_serviciosStreaming_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -140,7 +192,7 @@ func (x *CancionDTO) String() string {
 func (*CancionDTO) ProtoMessage() {}
 
 func (x *CancionDTO) ProtoReflect() protoreflect.Message {
-	mi := &file_serviciosStreaming_proto_msgTypes[2]
+	mi := &file_serviciosStreaming_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -153,7 +205,7 @@ func (x *CancionDTO) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancionDTO.ProtoReflect.Descriptor instead.
 func (*CancionDTO) Descriptor() ([]byte, []int) {
-	return file_serviciosStreaming_proto_rawDescGZIP(), []int{2}
+	return file_serviciosStreaming_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CancionDTO) GetId() int32 {
@@ -227,7 +279,10 @@ const file_serviciosStreaming_proto_rawDesc = "" +
 	"\vpeticionDTO\x12\x0e\n" +
 	"\x02Id\x18\x01 \x01(\x05R\x02Id\"&\n" +
 	"\x10FragmentoCancion\x12\x12\n" +
-	"\x04data\x18\x01 \x01(\fR\x04data\"\x88\x02\n" +
+	"\x04data\x18\x01 \x01(\fR\x04data\"b\n" +
+	"\x11PeticionStreamDTO\x12\x1c\n" +
+	"\tIdUsuario\x18\x01 \x01(\x05R\tIdUsuario\x12/\n" +
+	"\aCancion\x18\x02 \x01(\v2\x15.servicios.CancionDTOR\aCancion\"\x88\x02\n" +
 	"\n" +
 	"CancionDTO\x12\x0e\n" +
 	"\x02Id\x18\x01 \x01(\x05R\x02Id\x12\x16\n" +
@@ -238,10 +293,10 @@ const file_serviciosStreaming_proto_rawDesc = "" +
 	"\tDuracionS\x18\x06 \x01(\x05R\tDuracionS\x12\x16\n" +
 	"\x06Genero\x18\a \x01(\tR\x06Genero\x12\x16\n" +
 	"\x06Idioma\x18\b \x01(\tR\x06Idioma\x12.\n" +
-	"\x12RutaAlmacenamiento\x18\t \x01(\tR\x12RutaAlmacenamiento2\xad\x01\n" +
+	"\x12RutaAlmacenamiento\x18\t \x01(\tR\x12RutaAlmacenamiento2\xb4\x01\n" +
 	"\fAudioService\x12T\n" +
-	"\x1benviarCancionMedianteStream\x12\x16.servicios.peticionDTO\x1a\x1b.servicios.FragmentoCancion0\x01\x12G\n" +
-	"\x0fstremearCancion\x12\x15.servicios.CancionDTO\x1a\x1b.servicios.FragmentoCancion0\x01B\x15Z\x13/serviciosStreamingb\x06proto3"
+	"\x1benviarCancionMedianteStream\x12\x16.servicios.peticionDTO\x1a\x1b.servicios.FragmentoCancion0\x01\x12N\n" +
+	"\x0fstremearCancion\x12\x1c.servicios.PeticionStreamDTO\x1a\x1b.servicios.FragmentoCancion0\x01B\x15Z\x13/serviciosStreamingb\x06proto3"
 
 var (
 	file_serviciosStreaming_proto_rawDescOnce sync.Once
@@ -255,22 +310,24 @@ func file_serviciosStreaming_proto_rawDescGZIP() []byte {
 	return file_serviciosStreaming_proto_rawDescData
 }
 
-var file_serviciosStreaming_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_serviciosStreaming_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_serviciosStreaming_proto_goTypes = []any{
-	(*PeticionDTO)(nil),      // 0: servicios.peticionDTO
-	(*FragmentoCancion)(nil), // 1: servicios.FragmentoCancion
-	(*CancionDTO)(nil),       // 2: servicios.CancionDTO
+	(*PeticionDTO)(nil),       // 0: servicios.peticionDTO
+	(*FragmentoCancion)(nil),  // 1: servicios.FragmentoCancion
+	(*PeticionStreamDTO)(nil), // 2: servicios.PeticionStreamDTO
+	(*CancionDTO)(nil),        // 3: servicios.CancionDTO
 }
 var file_serviciosStreaming_proto_depIdxs = []int32{
-	0, // 0: servicios.AudioService.enviarCancionMedianteStream:input_type -> servicios.peticionDTO
-	2, // 1: servicios.AudioService.stremearCancion:input_type -> servicios.CancionDTO
-	1, // 2: servicios.AudioService.enviarCancionMedianteStream:output_type -> servicios.FragmentoCancion
-	1, // 3: servicios.AudioService.stremearCancion:output_type -> servicios.FragmentoCancion
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: servicios.PeticionStreamDTO.Cancion:type_name -> servicios.CancionDTO
+	0, // 1: servicios.AudioService.enviarCancionMedianteStream:input_type -> servicios.peticionDTO
+	2, // 2: servicios.AudioService.stremearCancion:input_type -> servicios.PeticionStreamDTO
+	1, // 3: servicios.AudioService.enviarCancionMedianteStream:output_type -> servicios.FragmentoCancion
+	1, // 4: servicios.AudioService.stremearCancion:output_type -> servicios.FragmentoCancion
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_serviciosStreaming_proto_init() }
@@ -284,7 +341,7 @@ func file_serviciosStreaming_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_serviciosStreaming_proto_rawDesc), len(file_serviciosStreaming_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -29,7 +29,7 @@ const (
 type AudioServiceClient interface {
 	// Función de streaming de canción
 	EnviarCancionMedianteStream(ctx context.Context, in *PeticionDTO, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FragmentoCancion], error)
-	StremearCancion(ctx context.Context, in *CancionDTO, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FragmentoCancion], error)
+	StremearCancion(ctx context.Context, in *PeticionStreamDTO, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FragmentoCancion], error)
 }
 
 type audioServiceClient struct {
@@ -59,13 +59,13 @@ func (c *audioServiceClient) EnviarCancionMedianteStream(ctx context.Context, in
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AudioService_EnviarCancionMedianteStreamClient = grpc.ServerStreamingClient[FragmentoCancion]
 
-func (c *audioServiceClient) StremearCancion(ctx context.Context, in *CancionDTO, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FragmentoCancion], error) {
+func (c *audioServiceClient) StremearCancion(ctx context.Context, in *PeticionStreamDTO, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FragmentoCancion], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &AudioService_ServiceDesc.Streams[1], AudioService_StremearCancion_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[CancionDTO, FragmentoCancion]{ClientStream: stream}
+	x := &grpc.GenericClientStream[PeticionStreamDTO, FragmentoCancion]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ type AudioService_StremearCancionClient = grpc.ServerStreamingClient[FragmentoCa
 type AudioServiceServer interface {
 	// Función de streaming de canción
 	EnviarCancionMedianteStream(*PeticionDTO, grpc.ServerStreamingServer[FragmentoCancion]) error
-	StremearCancion(*CancionDTO, grpc.ServerStreamingServer[FragmentoCancion]) error
+	StremearCancion(*PeticionStreamDTO, grpc.ServerStreamingServer[FragmentoCancion]) error
 	mustEmbedUnimplementedAudioServiceServer()
 }
 
@@ -98,7 +98,7 @@ type UnimplementedAudioServiceServer struct{}
 func (UnimplementedAudioServiceServer) EnviarCancionMedianteStream(*PeticionDTO, grpc.ServerStreamingServer[FragmentoCancion]) error {
 	return status.Errorf(codes.Unimplemented, "method EnviarCancionMedianteStream not implemented")
 }
-func (UnimplementedAudioServiceServer) StremearCancion(*CancionDTO, grpc.ServerStreamingServer[FragmentoCancion]) error {
+func (UnimplementedAudioServiceServer) StremearCancion(*PeticionStreamDTO, grpc.ServerStreamingServer[FragmentoCancion]) error {
 	return status.Errorf(codes.Unimplemented, "method StremearCancion not implemented")
 }
 func (UnimplementedAudioServiceServer) mustEmbedUnimplementedAudioServiceServer() {}
@@ -134,11 +134,11 @@ func _AudioService_EnviarCancionMedianteStream_Handler(srv interface{}, stream g
 type AudioService_EnviarCancionMedianteStreamServer = grpc.ServerStreamingServer[FragmentoCancion]
 
 func _AudioService_StremearCancion_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(CancionDTO)
+	m := new(PeticionStreamDTO)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(AudioServiceServer).StremearCancion(m, &grpc.GenericServerStream[CancionDTO, FragmentoCancion]{ServerStream: stream})
+	return srv.(AudioServiceServer).StremearCancion(m, &grpc.GenericServerStream[PeticionStreamDTO, FragmentoCancion]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.

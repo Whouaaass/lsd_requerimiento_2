@@ -8,19 +8,39 @@ import (
 	"os"
 	"time"
 
+	reproduccionesapi "musis.servidordestreaming/grpc-servidor/internal/clients/reproducciones_api"
 	pb "musis.servidordestreaming/grpc-servidor/serviciosStreaming"
 )
 
-func StreamAudioFileFromSong(cancion *pb.CancionDTO, funcionParaEnviarFragmento func([]byte) error) error {
-	// TODO: Enviar cancion al servidor de almacenamiento
+type AudioService struct {
+	reproduccionesAPI *reproduccionesapi.ReproduccionesAPIClient
+}
+
+func NewAudioService (apiReproducciones *reproduccionesapi.ReproduccionesAPIClient) *AudioService {
+	return &AudioService{
+		reproduccionesAPI: apiReproducciones,
+	}
+}
+
+func (s *AudioService) StreamAudioFileFromSong(req *pb.PeticionStreamDTO, funcionParaEnviarFragmento func([]byte) error) error {
+
+	go s.reproduccionesAPI.RegistrarReproduccion(reproduccionesapi.RegistrarReproduccionPayload{
+		IdUsuario: int(req.IdUsuario),
+		Cancion: reproduccionesapi.CancionDTO{
+			Id: int(req.GetCancion().GetId()),
+			Artista: req.GetCancion().Autor,
+			Genero: req.GetCancion().Genero,
+			Idioma: req.GetCancion().Idioma,
+		},
+	})
 
 	return streamAudioFile(
-		cancion.RutaAlmacenamiento,
+		req.GetCancion().RutaAlmacenamiento,
 		funcionParaEnviarFragmento,
 	)
 }
 
-func StreamAudioFile(id int32, funcionParaEnviarFragmento func([]byte) error) error {
+func (*AudioService) StreamAudioFile(id int32, funcionParaEnviarFragmento func([]byte) error) error {
 	return errors.New("Función no implementada")
 }
 

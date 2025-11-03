@@ -14,7 +14,7 @@ func Load() Config {
     }
     reproducciones_url := os.Getenv("REPRODUCCIONES_API_URL")
     if reproducciones_url == "" {
-   		reproducciones_url = "http://localhost:3002"
+   		reproducciones_url = "http://localhost:8082"
     }
     return Config{
     	GRPCPort: port,
