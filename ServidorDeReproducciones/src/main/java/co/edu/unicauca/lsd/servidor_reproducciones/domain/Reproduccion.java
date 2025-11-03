@@ -2,13 +2,14 @@ package co.edu.unicauca.lsd.servidor_reproducciones.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
-import java.util.HashSet;
-import java.util.Set;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,8 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Canciones {
+@Table(name = "Reproducciones")
+public class Reproduccion {
 
     @Id
     @Column(nullable = false, updatable = false)
@@ -33,15 +35,13 @@ public class Canciones {
     private Long id;
 
     @Column(nullable = false)
-    private String artista;
+    private Long reproducciones;
 
     @Column(nullable = false)
-    private String genero;
+    private Long idUsuario;
 
-    @Column(nullable = false)
-    private String idioma;
-
-    @OneToMany(mappedBy = "idCancion")
-    private Set<Reproducciones> reproducciones = new HashSet<>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_cancion", nullable = false)
+    private Cancion cancion;
 
 }
