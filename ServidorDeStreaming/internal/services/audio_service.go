@@ -24,6 +24,9 @@ func NewAudioService (apiReproducciones *reproduccionesapi.ReproduccionesAPIClie
 
 func (s *AudioService) StreamAudioFileFromSong(req *pb.PeticionStreamDTO, funcionParaEnviarFragmento func([]byte) error) error {
 
+	logPeticionStreamDTO(req)
+
+
 	go s.reproduccionesAPI.RegistrarReproduccion(reproduccionesapi.RegistrarReproduccionPayload{
 		IdUsuario: int(req.IdUsuario),
 		Cancion: reproduccionesapi.CancionDTO{
@@ -67,7 +70,7 @@ func streamAudioFile(ruta string, funcionParaEnviarFragmento func([]byte) error)
 		log.Printf("Fragmento #%d leído (%d bytes) y enviando", fragmento, n)
 
 		// ejecutamos la función para enviar el fragmento al cliente
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Millisecond * 200)
 		err = funcionParaEnviarFragmento(buffer[:n])
 		if err != nil {
 			return fmt.Errorf("error enviando el fragmento #%d: %w", fragmento, err)
@@ -75,4 +78,28 @@ func streamAudioFile(ruta string, funcionParaEnviarFragmento func([]byte) error)
 	}
 
 	return nil
+}
+
+
+
+func logPeticionStreamDTO(req *pb.PeticionStreamDTO) {
+    if req == nil {
+        log.Println("PeticionStreamDTO is nil")
+        return
+    }
+
+    log.Println("=== PeticionStreamDTO Log ===")
+    log.Printf("ID Usuario: %d", req.GetIdUsuario())
+
+    if cancion := req.GetCancion(); cancion != nil {
+        log.Println("--- Cancion Details ---")
+        log.Printf("  ID: %d", cancion.GetId())
+        log.Printf("  Ruta Almacenamiento: %s", cancion.GetRutaAlmacenamiento())
+        log.Printf("  Autor: %s", cancion.GetAutor())
+        log.Printf("  Genero: %s", cancion.GetGenero())
+        log.Printf("  Idioma: %s", cancion.GetIdioma())
+    } else {
+        log.Println("  Cancion: nil")
+    }
+    log.Println("============================")
 }

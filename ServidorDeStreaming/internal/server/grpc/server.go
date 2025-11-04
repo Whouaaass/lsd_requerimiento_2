@@ -23,6 +23,9 @@ func NewServer(cfg config.Config) *Server {
         grpc.ChainUnaryInterceptor(
             interceptors.RecoveryInterceptor,
         ),
+        grpc.ChainStreamInterceptor(
+        	interceptors.RecoveryStreamInterceptor,
+        ),
     }
 
     grpcServer := grpc.NewServer(opts...)
