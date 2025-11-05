@@ -2,30 +2,48 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"musis.cliente/grpc-cliente/pkg/auth"
+	cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
 	"musis.cliente/grpc-cliente/pkg/streamingService"
 )
 
 const (
-	generosView uint = iota
-	cancionesView
+	loginView uint = iota
+	menuView
+	generosView
+	catalogoView
 	cancionView
-
-	testStreamingView
 )
 
 type model struct {
-	state              uint
+	state uint
+	user  *auth.User
+
+	// Data
+	canciones []cancionesapi.MetadatoCancionDTO
+
+	// Login
+	focusIndex    int // 0 = username, 1 = password
+	usernameInput textinput.Model
+	passwordInput textinput.Model
+	loginError    string
+
+	// services
 	audioStreamService *streamingService.ProcedimientosStreaming
-	idUsuario          int32
+	cancionesService   *cancionesapi.CancionesAPIClient
 
 	// UI and state management
-	ctx           context.Context    // Context for managing the stream lifecycle
-	cancel        context.CancelFunc // Function to cancel the stream
-	isPlaying     bool
-	statusMessage string
-	errorMessage  string
+	ctx             context.Context                  // Context for managing the stream lifecycle
+	cancel          context.CancelFunc               // Function to cancel the stream
+	cursor          int                              // Posición actual del cursor
+	selectedCancion *cancionesapi.MetadatoCancionDTO // La canción seleccionada
+	isPlaying       bool
+	statusMessage   string
+	errorMessage    string
 
 	// Channels for async communication with the streaming goroutine
 	statusChan chan string
@@ -33,63 +51,188 @@ type model struct {
 	doneChan   chan struct{} // Signals that streaming is finished
 }
 
-func NewModel(audioStreamService *streamingService.ProcedimientosStreaming) model {
+func NewModel(audioStreamService *streamingService.ProcedimientosStreaming, cancionesService *cancionesapi.CancionesAPIClient) model {
+
+	user := textinput.New()
+	user.Placeholder = "Usuario"
+	user.Focus() // El primer input empieza enfocado
+	user.CharLimit = 32
+	user.Width = 30
+
+	pass := textinput.New()
+	pass.Placeholder = "Contraseña"
+	pass.EchoMode = textinput.EchoPassword // Oculta la contraseña
+	pass.CharLimit = 32
+	pass.Width = 30
+
 	return model{
-		state:              testStreamingView,
+		state:         loginView,
+		focusIndex:    0, // El foco empieza en el username
+		usernameInput: user,
+		passwordInput: pass,
+		loginError:    "",
+
 		audioStreamService: audioStreamService,
-		idUsuario:          1,
+		cancionesService:   cancionesService,
+		user:               nil,
 		isPlaying:          false,
 		statusMessage:      "",
 	}
 }
 func (m model) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		key := msg.String()
 		switch m.state {
-		case testStreamingView:
+		case loginView:
+			// Si el mensaje no es para cambiar de control,
+			// pasarlo al input enfocado
+			switch key {
+			case "ctrl+c":
+				return m, tea.Quit
+
+			case "tab", "shift+tab", "up", "down":
+				// Cambiar el foco
+				m.focusIndex = (m.focusIndex + 1) % 2
+				if m.focusIndex == 0 {
+					m.usernameInput.Focus()
+					m.passwordInput.Blur()
+				} else {
+					m.usernameInput.Blur()
+					m.passwordInput.Focus()
+				}
+				return m, nil
+
+			case "enter":
+				// --- Aquí va tu lógica de autenticación ---
+				user := m.usernameInput.Value()
+				pass := m.passwordInput.Value()
+
+				authUser, err := auth.AutenticarUsuario(user, pass)
+				if err != nil {
+					m.loginError = err.Error()
+					return m, nil
+				}
+
+				m.loginError = ""
+				m.user = authUser
+				return goTo(&m, menuView)
+			}
+
+			// Pasa el mensaje (escritura) al input correcto
+			if m.focusIndex == 0 {
+				m.usernameInput, cmd = m.usernameInput.Update(msg)
+			} else {
+				m.passwordInput, cmd = m.passwordInput.Update(msg)
+			}
+			return m, cmd
+		case menuView:
 			switch key {
 			case "ctrl+c", "q":
-				// Ensure stream is stopped before quitting.
+				return m, tea.Quit
+
+			case "up", "k":
+				if m.cursor > 0 {
+					m.cursor--
+				}
+
+			case "down", "j":
+				if m.cursor < 2 {
+					m.cursor++
+				}
+
+			case "enter":
+				switch m.cursor {
+
+				case 1: // Ir a Catálogo de Canciones
+					m.state = catalogoView
+					m.canciones = nil // Limpia para forzar recarga
+					m.cursor = 0      // Resetea cursor para la lista de canciones
+					// Asumo que tienes este comando de nuestra conversación anterior
+					return m, m.fetchCancionesCmd()
+
+				case 2: // Cerrar Sesión
+					return goTo(&m, loginView)
+				}
+			}
+
+		case cancionView:
+			switch key {
+			// --- Controles de Navegación ---
+			case "esc", "b": // Volver al catálogo
+				// Detener la música si se está reproduciendo antes de salir
+				if m.isPlaying && m.cancel != nil {
+					m.cancel()
+				}
+				return goTo(&m, catalogoView)
+
+			case "ctrl+c", "q":
+				// Asegurarse de detener el stream antes de salir
 				if m.isPlaying && m.cancel != nil {
 					m.cancel()
 				}
 				return m, tea.Quit
 
+			// --- Controles de Streaming (Fusionados) ---
 			case "p":
-				// Start playing only if not already playing.
-				if !m.isPlaying {
+				if !m.isPlaying && m.selectedCancion != nil { // Solo reproduce si hay una canción
 					m.isPlaying = true
-					m.statusMessage = "Starting stream..."
+					m.statusMessage = fmt.Sprintf("Cargando %s...", m.selectedCancion.Titulo)
 					m.errorMessage = ""
 					m.ctx, m.cancel = context.WithCancel(context.Background())
-
-					// Create channels for this streaming session
 					m.statusChan = make(chan string, 10)
 					m.errorChan = make(chan error, 10)
 					m.doneChan = make(chan struct{})
 
-					// Start the streaming task in a goroutine.
+					// Asumo que tu runStreamingTask usará m.selectedCancion
 					go m.runStreamingTask()
 
-					// Return a command to listen for the first message.
 					return m, m.listenForMessagesCmd()
 				}
 				return m, nil
 
 			case "s":
-				// Stop the stream if it's playing.
 				if m.isPlaying && m.cancel != nil {
-					m.statusMessage = "Stopping stream..."
-					m.cancel() // Signal goroutines to stop.
+					m.statusMessage = "Deteniendo stream..."
+					m.cancel() // Señaliza a la goroutine que pare
 				}
 				return m, nil
 			}
+
+		case catalogoView:
+			switch key {
+			case "esc", "b": // Volver al catálogo
+				return goTo(&m, menuView)
+			case "q", "ctrl+c":
+				return m, tea.Quit
+
+			case "up", "k": // Mover cursor hacia arriba
+				if m.cursor > 0 {
+					m.cursor--
+				}
+			case "down", "j": // Mover cursor hacia abajo
+				// Asegúrate de que las canciones se hayan cargado antes de chequear el largo
+				if m.canciones != nil && m.cursor < len(m.canciones)-1 {
+					m.cursor++
+				}
+
+			case "enter": // Seleccionar la canción
+				// Solo si las canciones están cargadas y la lista no está vacía
+				if len(m.canciones) > 0 {
+					// 1. Guardar la canción seleccionada
+					m.selectedCancion = &m.canciones[m.cursor]
+					// 2. Cambiar a la vista de detalle
+					m.state = cancionView
+				}
+				return m, nil
+			}
+
 		default:
 			switch key {
 			case "ctrl+c", "q":
@@ -118,6 +261,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.cleanup() // Clean up context and channels.
 		// No new command, stop listening.
 		return m, nil
+		// --- Handle our new async message ---
+	case cancionesLoadedMsg:
+		if msg.err != nil {
+			m.errorMessage = fmt.Sprintf("Error cargando canciones: %v", msg.err)
+		} else {
+			m.canciones = msg.canciones
+			m.errorMessage = "" // Clear any previous error
+		}
+		return m, nil
+	}
+
+	if m.state == loginView {
+		var cmdUser, cmdPass tea.Cmd
+		m.usernameInput, cmdUser = m.usernameInput.Update(msg)
+		m.passwordInput, cmdPass = m.passwordInput.Update(msg)
+		return m, tea.Batch(cmdUser, cmdPass)
 	}
 
 	return m, nil

@@ -7,45 +7,155 @@ import (
 
 func (m model) View() string {
 	switch m.state {
-	case generosView:
-		return getGenerosView(&m)
-	case testStreamingView:
-		return getTestStreamingView(&m)
+	case loginView:
+		return getLoggingView(&m)
+	case menuView:
+		return getMenuView(&m)
+	case catalogoView:
+		return getCatalogoView(&m)
+	case cancionView:
+		return getDetalleView(&m)
 	}
 
 	return "SIN VISTA\n\npresiona q para salir\n"
 }
 
-func getGenerosView(m *model) string {
-	return "GENEROS VIEW"
-}
-
-func getTestStreamingView(m *model) string {
-
+func getLoggingView(m *model) string {
 	var b strings.Builder
 
-	b.WriteString("--- Spotifake Streaming Test ---\n\n")
+	b.WriteString("INICIO DE SESIÓN\n\n")
 
-	// Show playback status
-	if m.isPlaying {
-		b.WriteString("▶ Playing\n")
-	} else {
-		b.WriteString("■ Stopped\n")
+	// Dibuja los inputs
+	b.WriteString(m.usernameInput.View())
+	b.WriteString("\n")
+	b.WriteString(m.passwordInput.View())
+	b.WriteString("\n\n")
+
+	// Muestra el error de login si existe
+	if m.loginError != "" {
+		// (Opcional: puedes usar un estilo de 'lipgloss' para el color rojo)
+		b.WriteString(m.loginError + "\n\n")
 	}
 
-	// Show status and error messages
-	b.WriteString(fmt.Sprintf("Status: %s\n", m.statusMessage))
+	// Ayuda
+	b.WriteString("(Usa 'Tab' para cambiar de campo)\n")
+	b.WriteString("(Presiona 'Enter' para ingresar)\n")
+	b.WriteString("(Presiona 'Ctrl+C' para salir)\n")
+
+	return b.String()
+}
+
+func getCatalogoView(m *model) string {
+	var b strings.Builder
+
+	// --- Lógica de carga (sin cambios) ---
+	/*
+		if m.canciones == nil {
+			var err error
+			m.canciones, err = m.cancionesService.ListarCanciones()
+			if err != nil {
+				fmt.Fprintf(&b, "Error al cargar el catálogo:\n%v", err)
+				return b.String()
+			}
+		}
+	*/
+
+	// --- Lógica de renderizado (Modificada) ---
+	if len(m.canciones) == 0 {
+		b.WriteString("El catálogo está vacío.")
+		return b.String()
+	}
+
+	b.WriteString("Catálogo de Canciones (Usa ↑/↓ para mover, 'Enter' para seleccionar):\n\n")
+
+	for i, cancion := range m.canciones {
+		// Variable para el cursor
+		cursor := "  " // Espacio en blanco si no está seleccionado
+
+		if m.cursor == i {
+			cursor = "> " // Flecha si está seleccionado
+		}
+
+		// Escribir la línea con el cursor y la info de la canción
+		fmt.Fprintf(&b, "%s%s - %s (Género: %s)\n",
+			cursor,
+			cancion.Titulo,
+			cancion.Artista,
+			cancion.Genero,
+		)
+	}
+
+	b.WriteString("\n  (b, Esc) Volver al menu principal")
+	b.WriteString("\n (Presiona 'q' para salir)")
+	return b.String()
+}
+
+func getDetalleView(m *model) string {
+	var b strings.Builder
+
+	b.WriteString("Detalle de la Canción:\n\n")
+
+	// --- Detalles de la canción ---
+	if m.selectedCancion != nil {
+		fmt.Fprintf(&b, "  Título:   %s\n", m.selectedCancion.Titulo)
+		fmt.Fprintf(&b, "  Artista:  %s\n", m.selectedCancion.Artista)
+		fmt.Fprintf(&b, "  Género:   %s\n", m.selectedCancion.Genero)
+		fmt.Fprintf(&b, "  Idioma:   %s\n", m.selectedCancion.Idioma)
+	} else {
+		b.WriteString("  No se ha seleccionado ninguna canción.\n")
+	}
+
+	b.WriteString("\n--- Controles de Reproducción ---\n\n")
+
+	// --- Estado del Streaming (de getTestStreamingView) ---
+	if m.isPlaying {
+		b.WriteString("  ▶ Reproduciendo\n")
+	} else {
+		b.WriteString("  ■ Detenido\n")
+	}
+
+	// --- Mensajes de Estado y Error (de getTestStreamingView) ---
+	b.WriteString(fmt.Sprintf("  Estado: %s\n", m.statusMessage))
 	if m.errorMessage != "" {
-		b.WriteString(fmt.Sprintf("Error: %s\n", m.errorMessage))
+		b.WriteString(fmt.Sprintf("  Error: %s\n", m.errorMessage))
 	}
 
-	b.WriteString("\n--- Controls ---\n")
+	// --- Controles (Fusionados) ---
+	b.WriteString("\n\n--- Controles ---\n")
 	if m.isPlaying {
-		b.WriteString("Press 's' to Stop\n")
+		b.WriteString("  (s) Detener\n")
 	} else {
-		b.WriteString("Press 'p' to Play\n")
+		b.WriteString("  (p) Reproducir\n")
 	}
-	b.WriteString("Press 'q' to Quit\n")
+	b.WriteString("  (b, Esc) Volver al catálogo\n")
+	b.WriteString("  (q) Salir\n")
 
+	return b.String()
+}
+
+func getMenuView(m *model) string {
+	var b strings.Builder
+
+	// Saludo al usuario que inició sesión
+	b.WriteString(fmt.Sprintf("¡Hola, %v! \n\n", m.user.Username))
+	b.WriteString("Menú Principal\n")
+	b.WriteString("(Usa ↑/↓ para mover, 'Enter' para seleccionar):\n\n")
+
+	// Opciones del menú
+	opciones := []string{
+		"Preferencias",
+		"Catálogo de Canciones",
+		"Cerrar Sesión",
+	}
+
+	for i, opcion := range opciones {
+		cursor := "  " // Espacio
+		if m.cursor == i {
+			cursor = "> " // Flecha
+		}
+		fmt.Fprintf(&b, "%s%s\n", cursor, opcion)
+	}
+
+	b.WriteString("\n  (Presiona 'q' para salir)")
 	return b.String()
 }

@@ -1,5 +1,7 @@
 package cli
 
+import cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
+
 // statusMsg is a message to update the status line.
 type statusMsg string
 
@@ -13,3 +15,9 @@ func (e errorMsg) Error() string {
 // playbackFinishedMsg signals that streaming and playback have
 // completed successfully or been stopped.
 type playbackFinishedMsg struct{}
+
+// cancionesLoadedMsg holds the result of our async fetch.
+type cancionesLoadedMsg struct {
+	canciones []cancionesapi.MetadatoCancionDTO
+	err       error
+}

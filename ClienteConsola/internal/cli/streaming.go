@@ -15,6 +15,10 @@ func (m *model) runStreamingTask() {
 	// This function uses the model's context and channels:
 	// m.ctx, m.statusChan, m.errorChan, m.doneChan
 
+	if m.selectedCancion == nil {
+		return
+	}
+
 	var wg sync.WaitGroup
 	// Use the model's context, which can be cancelled by pressing 's'
 	ctx := m.ctx
@@ -64,17 +68,17 @@ func (m *model) runStreamingTask() {
 	go func() {
 		defer wg.Done()
 		m.audioStreamService.StreamAudioOfSong(&pb.PeticionStreamDTO{
-			IdUsuario: m.idUsuario,
+			IdUsuario: m.user.Id,
 			Cancion: &pb.CancionDTO{
-				Id:                 100000,
-				Titulo:             "Estrellas en la oscuridad",
-				Autor:              "Molinette cinema",
-				Album:              "El Abismo",
-				Genero:             "Rock indie",
-				Idioma:             "ES",
+				Id:                 m.selectedCancion.Id,
+				Titulo:             m.selectedCancion.Titulo,
+				Autor:              m.selectedCancion.Artista,
+				Album:              "",
+				Genero:             m.selectedCancion.Genero,
+				Idioma:             m.selectedCancion.Idioma,
 				AnioLanzamiento:    0,
-				DuracionS:          30,
-				RutaAlmacenamiento: "../canciones/cancion2.mp3",
+				DuracionS:          0,
+				RutaAlmacenamiento: m.selectedCancion.RutaAlmacenamiento,
 			},
 		}, ctx, audioChunksChan, internalStatusChan)
 	}()

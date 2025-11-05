@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "titulo": "Lamento Boliviano",
+    "genero": "Rock",
+    "artista": "Los enanitos verdes",
+    "idioma": "ES ",
+    "ruta-almacenamiento": "../canciones/Lamento Boliviano_Rock_Los enanitos verdes.mp3"
+  },
+  {
+    "id": 2,
+    "titulo": "Ella muere por mi",
+    "genero": "Bachata",
+    "artista": "Romeo Santos",
+    "idioma": "ES",
+    "ruta-almacenamiento": "../canciones/Ella muere por mi_Bachata_Romeo Santos.mp3"
+  }
+]
