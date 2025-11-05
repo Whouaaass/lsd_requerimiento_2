@@ -29,12 +29,7 @@ func (s *AudioService) StreamAudioFileFromSong(req *pb.PeticionStreamDTO, funcio
 	go func() {
 		reproID, err := s.reproduccionesAPI.RegistrarReproduccion(reproduccionesapi.RegistrarReproduccionPayload{
 			IdUsuario: int(req.IdUsuario),
-			Cancion: reproduccionesapi.CancionDTO{
-				Id:      int(req.GetCancion().GetId()),
-				Artista: req.GetCancion().Autor,
-				Genero:  req.GetCancion().Genero,
-				Idioma:  req.GetCancion().Idioma,
-			},
+			IdCancion: int(req.Cancion.Id),
 		})
 		if err != nil {
 			log.Println(err.Error())

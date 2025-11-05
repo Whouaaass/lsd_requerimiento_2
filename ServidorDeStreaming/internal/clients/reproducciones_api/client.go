@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+
 	"musis.servidordestreaming/grpc-servidor/internal/config"
 )
 
@@ -25,6 +26,7 @@ func NewReproduccionesAPIClient(cfg config.Config) *ReproduccionesAPIClient {
 	}
 }
 
+/*
 // ObtenerReproduccionesDeUsuario retrieves playback records for a specific user
 func (c *ReproduccionesAPIClient) ObtenerReproduccionesDeUsuario(userID int) ([]ReproduccionDTO, error) {
 	url := fmt.Sprintf("%s/api/reproducciones?user_id=%d", c.baseURL, userID)
@@ -54,6 +56,7 @@ func (c *ReproduccionesAPIClient) ObtenerReproduccionesDeUsuario(userID int) ([]
 
 	return reproducciones, nil
 }
+*/
 
 // RegistrarReproduccion registers a new playback for a user
 func (c *ReproduccionesAPIClient) RegistrarReproduccion(request RegistrarReproduccionPayload) (int, error) {
