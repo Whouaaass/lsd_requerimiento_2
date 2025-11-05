@@ -1,0 +1,16 @@
+services:
+  servidor-streaming:
+    build:
+      context: ./ServidorDeStreaming
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./ServidorDeStreaming:/app
+      - /app/tmp
+      - ./canciones:/canciones
+    environment:
+      - GRPC_PORT=50051
+      - REPRODUCCIONES_API_URL=http://host.docker.internal:8082
+    ports:
+      - "50051:50051"
+    network_mode: bridge
+    command: sh -c "go run ./main"

@@ -1,0 +1,16 @@
+bin/
+obj/
+*.exe
+*.test
+*.out
+vendor/
+**/.git
+**/.gitignore
+**/.vscode
+**/*.log
+node_modules
+**/node_modules
+**/dist
+**/target
+**/.idea
+**/.DS_Store
