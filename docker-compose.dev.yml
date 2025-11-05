@@ -9,11 +9,12 @@ services:
       - ./canciones:/canciones
     environment:
       - GRPC_PORT=50051
-      - REPRODUCCIONES_API_URL=http://host.docker.internal:8082
+      - REPRODUCCIONES_API_URL=http://servidor-reproducciones:8082
     ports:
-      - "50051:50051"
-    network_mode: bridge
+      - "50051:50051"    
     command: sh -c "go run ./main"      
+    networks:
+      - default
 
   servidor-canciones:
     build:
@@ -58,7 +59,22 @@ services:
     depends_on:
       # Nos aseguramos que rabbitmq inicie primero
       - rabbitmq
-      
+  servidor-reproducciones:
+    build:
+      context: ./ServidorDeReproducciones
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Montamos el código fuente para desarrollo
+      - ./ServidorDeReproducciones:/app
+      # Montamos el caché de Maven para no descargar dependencias cada vez
+      - ~/.m2:/root/.m2
+    ports:
+      - "8082:8082"
+    # No necesita variables de entorno, ya que application.yml usa H2 en memoria
+    networks:
+      - default
+    # No depende de RabbitMQ, por lo que puede iniciar independientemente
+
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq
@@ -67,7 +83,7 @@ services:
       - RABBITMQ_DEFAULT_PASS=1234
     ports:
       - "5672:5672"
-      - "15672:15672"
+      - "15672:15672" # Management UI
     networks:
       - default
 
