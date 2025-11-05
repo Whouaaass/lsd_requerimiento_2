@@ -13,7 +13,52 @@ services:
     ports:
       - "50051:50051"
     network_mode: bridge
-    command: sh -c "go run ./main"    
+    command: sh -c "go run ./main"      
+
+  servidor-canciones:
+    build:
+        context: ./ServidorDeCanciones
+        dockerfile: Dockerfile.dev
+    volumes:
+      - ./ServidorDeCanciones:/app
+      - /app/tmp
+      - ./canciones:/canciones
+    environment:      
+      - RABBITMQ_CANCIONES_URL=amqp://admin:1234@rabbitmq:5672/
+    ports:
+      - "5000:5000"    
+    command: sh -c "go run ./main"
+    depends_on:
+      - rabbitmq
+    networks:
+      - default
+
+  servidor-envio-correos:
+    build:
+      # Asumo que la carpeta se llama 'ServidorDeEnvioCorreos'
+      context: ./ServidorDeEnvioCorreos
+      dockerfile: Dockerfile.dev
+    volumes:
+      # Montamos el código fuente para desarrollo
+      - ./ServidorDeEnvioCorreos:/app
+      # Montamos el caché de Maven para no descargar dependencias cada vez
+      - ~/.m2:/root/.m2
+    ports:
+      - "6000:6000"
+    environment:
+      # Sobrescribimos las propiedades para conectar a RabbitMQ
+      # Usamos el nombre del servicio 'rabbitmq' en lugar de 'localhost'
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=1234
+      - SERVER_PORT=6000
+    networks:
+      - default
+    depends_on:
+      # Nos aseguramos que rabbitmq inicie primero
+      - rabbitmq
+      
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq
@@ -23,6 +68,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - default
 
 networks:
   default:

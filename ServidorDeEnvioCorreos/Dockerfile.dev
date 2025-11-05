@@ -1,0 +1,21 @@
+# Usamos una imagen de Maven con Java 17 (definido en tu pom.xml)
+FROM maven:3.9-eclipse-temurin-17
+
+# Establecemos el directorio de trabajo
+WORKDIR /app
+
+# Copiamos el pom.xml primero para aprovechar la caché de Docker
+COPY pom.xml .
+
+# Descargamos las dependencias
+RUN mvn dependency:go-offline
+
+# Copiamos el resto del código fuente
+COPY src ./src
+
+# Exponemos el puerto 6000 (definido en tus properties)
+EXPOSE 6000
+
+# El comando para correr la aplicación en modo desarrollo
+# spring-boot:run usará devtools para recargar cambios
+CMD ["mvn", "spring-boot:run"]

@@ -4,29 +4,28 @@ import (
 	capaaccesoadatos "almacenamiento/capaAccesoADatos"
 	dtos "almacenamiento/capaFachadaServices/DTOs"
 	componnteconexioncola "almacenamiento/componnteConexionCola"
+	"almacenamiento/config"
 	"fmt"
 )
 
 type FachadaAlmacenamiento struct {
+	cfg          *config.Config
 	repo         *capaaccesoadatos.RepositorioCanciones
 	conexionCola *componnteconexioncola.RabbitPublisher
 }
 
 // Constructor de la fachada
-func NuevaFachadaAlmacenamiento() *FachadaAlmacenamiento {
+func NuevaFachadaAlmacenamiento(cfg *config.Config) *FachadaAlmacenamiento {
 	fmt.Println("🔧 Inicializando fachada de almacenamiento...")
 
 	repo := capaaccesoadatos.GetRepositorioCanciones()
 
-	conexionCola, err := componnteconexioncola.NewRabbitPublisher()
-	if err != nil {
-		fmt.Println(" Error al conectar con RabbitMQ:", err)
-		conexionCola = nil
-	}
+	conexionCola := componnteconexioncola.NewRabbitPublisher(cfg)	
 
 	return &FachadaAlmacenamiento{
 		repo:         repo,
 		conexionCola: conexionCola,
+		cfg:          &config.Config{},
 	}
 }
 

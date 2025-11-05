@@ -3,6 +3,7 @@ package controlador
 import (
 	dtos "almacenamiento/capaFachadaServices/DTOs"
 	capafachada "almacenamiento/capaFachadaServices/fachada"
+	"almacenamiento/config"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,9 +15,9 @@ type ControladorAlmacenamientoCanciones struct {
 }
 
 // Constructor del Controlador
-func NuevoControladorAlmacenamientoCanciones() *ControladorAlmacenamientoCanciones {
+func NuevoControladorAlmacenamientoCanciones(cfg *config.Config) *ControladorAlmacenamientoCanciones {
 	return &ControladorAlmacenamientoCanciones{
-		fachada: capafachada.NuevaFachadaAlmacenamiento(),
+		fachada: capafachada.NuevaFachadaAlmacenamiento(cfg),
 	}
 }
 

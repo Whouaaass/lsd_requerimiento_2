@@ -2,12 +2,14 @@ package main
 
 import (
 	controlador "almacenamiento/capaControladores"
+	"almacenamiento/config"
 	"fmt"
 	"net/http"
 )
 
 func main() {
-	ctrl := controlador.NuevoControladorAlmacenamientoCanciones()
+	cfg := config.Load()
+	ctrl := controlador.NuevoControladorAlmacenamientoCanciones(&cfg)
 
 	http.HandleFunc("/canciones/almacenamiento", ctrl.AlmacenarAudioCancion)
 	http.HandleFunc("/canciones/listar", ctrl.ListarCanciones)

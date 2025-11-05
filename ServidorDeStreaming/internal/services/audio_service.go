@@ -16,7 +16,7 @@ type AudioService struct {
 	reproduccionesAPI *reproduccionesapi.ReproduccionesAPIClient
 }
 
-func NewAudioService (apiReproducciones *reproduccionesapi.ReproduccionesAPIClient) *AudioService {
+func NewAudioService(apiReproducciones *reproduccionesapi.ReproduccionesAPIClient) *AudioService {
 	return &AudioService{
 		reproduccionesAPI: apiReproducciones,
 	}
@@ -26,16 +26,22 @@ func (s *AudioService) StreamAudioFileFromSong(req *pb.PeticionStreamDTO, funcio
 
 	logPeticionStreamDTO(req)
 
-
-	go s.reproduccionesAPI.RegistrarReproduccion(reproduccionesapi.RegistrarReproduccionPayload{
-		IdUsuario: int(req.IdUsuario),
-		Cancion: reproduccionesapi.CancionDTO{
-			Id: int(req.GetCancion().GetId()),
-			Artista: req.GetCancion().Autor,
-			Genero: req.GetCancion().Genero,
-			Idioma: req.GetCancion().Idioma,
-		},
-	})
+	go func() {
+		reproID, err := s.reproduccionesAPI.RegistrarReproduccion(reproduccionesapi.RegistrarReproduccionPayload{
+			IdUsuario: int(req.IdUsuario),
+			Cancion: reproduccionesapi.CancionDTO{
+				Id:      int(req.GetCancion().GetId()),
+				Artista: req.GetCancion().Autor,
+				Genero:  req.GetCancion().Genero,
+				Idioma:  req.GetCancion().Idioma,
+			},
+		})
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		log.Printf("Reproduccion creada: %d\n", reproID)
+	}()
 
 	return streamAudioFile(
 		req.GetCancion().RutaAlmacenamiento,
@@ -44,7 +50,7 @@ func (s *AudioService) StreamAudioFileFromSong(req *pb.PeticionStreamDTO, funcio
 }
 
 func (*AudioService) StreamAudioFile(id int32, funcionParaEnviarFragmento func([]byte) error) error {
-	return errors.New("Función no implementada")
+	return errors.New("función no implementada")
 }
 
 func streamAudioFile(ruta string, funcionParaEnviarFragmento func([]byte) error) error {
@@ -80,26 +86,24 @@ func streamAudioFile(ruta string, funcionParaEnviarFragmento func([]byte) error)
 	return nil
 }
 
-
-
 func logPeticionStreamDTO(req *pb.PeticionStreamDTO) {
-    if req == nil {
-        log.Println("PeticionStreamDTO is nil")
-        return
-    }
+	if req == nil {
+		log.Println("PeticionStreamDTO is nil")
+		return
+	}
 
-    log.Println("=== PeticionStreamDTO Log ===")
-    log.Printf("ID Usuario: %d", req.GetIdUsuario())
+	log.Println("=== PeticionStreamDTO Log ===")
+	log.Printf("ID Usuario: %d", req.GetIdUsuario())
 
-    if cancion := req.GetCancion(); cancion != nil {
-        log.Println("--- Cancion Details ---")
-        log.Printf("  ID: %d", cancion.GetId())
-        log.Printf("  Ruta Almacenamiento: %s", cancion.GetRutaAlmacenamiento())
-        log.Printf("  Autor: %s", cancion.GetAutor())
-        log.Printf("  Genero: %s", cancion.GetGenero())
-        log.Printf("  Idioma: %s", cancion.GetIdioma())
-    } else {
-        log.Println("  Cancion: nil")
-    }
-    log.Println("============================")
+	if cancion := req.GetCancion(); cancion != nil {
+		log.Println("--- Cancion Details ---")
+		log.Printf("  ID: %d", cancion.GetId())
+		log.Printf("  Ruta Almacenamiento: %s", cancion.GetRutaAlmacenamiento())
+		log.Printf("  Autor: %s", cancion.GetAutor())
+		log.Printf("  Genero: %s", cancion.GetGenero())
+		log.Printf("  Idioma: %s", cancion.GetIdioma())
+	} else {
+		log.Println("  Cancion: nil")
+	}
+	log.Println("============================")
 }
