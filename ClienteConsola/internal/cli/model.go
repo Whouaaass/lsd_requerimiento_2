@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"musis.cliente/grpc-cliente/pkg/auth"
 	cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
+	preferenciasapi "musis.cliente/grpc-cliente/pkg/preferencias_api"
 	"musis.cliente/grpc-cliente/pkg/streamingService"
 )
 
@@ -17,6 +18,7 @@ const (
 	generosView
 	catalogoView
 	cancionView
+	preferenciasView // Nueva vista
 )
 
 type model struct {
@@ -35,6 +37,7 @@ type model struct {
 	// services
 	audioStreamService *streamingService.ProcedimientosStreaming
 	cancionesService   *cancionesapi.CancionesAPIClient
+	preferenciasClient *preferenciasapi.CancionesAPIClient
 
 	// UI and state management
 	ctx             context.Context                  // Context for managing the stream lifecycle
@@ -45,13 +48,19 @@ type model struct {
 	statusMessage   string
 	errorMessage    string
 
+	isLoadingPreferencias bool
+	preferencias          *preferenciasapi.PreferenciasUsuario
+
 	// Channels for async communication with the streaming goroutine
 	statusChan chan string
 	errorChan  chan error
 	doneChan   chan struct{} // Signals that streaming is finished
 }
 
-func NewModel(audioStreamService *streamingService.ProcedimientosStreaming, cancionesService *cancionesapi.CancionesAPIClient) model {
+func NewModel(
+	audioStreamService *streamingService.ProcedimientosStreaming,
+	cancionesService *cancionesapi.CancionesAPIClient,
+	preferenciasClient *preferenciasapi.CancionesAPIClient) model {
 
 	user := textinput.New()
 	user.Placeholder = "Usuario"
@@ -74,6 +83,7 @@ func NewModel(audioStreamService *streamingService.ProcedimientosStreaming, canc
 
 		audioStreamService: audioStreamService,
 		cancionesService:   cancionesService,
+		preferenciasClient: preferenciasClient,
 		user:               nil,
 		isPlaying:          false,
 		statusMessage:      "",
@@ -134,6 +144,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		case menuView:
 			switch key {
+			case "b", "esc":
+				return goTo(&m, menuView)
 			case "ctrl+c", "q":
 				return m, tea.Quit
 
@@ -149,7 +161,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "enter":
 				switch m.cursor {
-
+				case 0:
+					m.state = preferenciasView
+					m.errorMessage = ""
+					// Cargar preferencias si no se han cargado
+					if m.preferencias == nil && !m.isLoadingPreferencias {
+						m.isLoadingPreferencias = true
+						m.statusMessage = "Cargando preferencias..."
+						return m, m.loadPreferenciasCmd()
+					}
+					return m, nil
 				case 1: // Ir a Catálogo de Canciones
 					m.state = catalogoView
 					m.canciones = nil // Limpia para forzar recarga
@@ -232,6 +253,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, nil
 			}
+		case preferenciasView:
+			switch key {
+			case "r": // Recargar preferencias
+				m.isLoadingPreferencias = true
+				m.preferencias = nil
+				m.statusMessage = "Recargando preferencias..."
+				m.errorMessage = ""
+				return m, m.loadPreferenciasCmd()
+			}
 
 		default:
 			switch key {
@@ -252,6 +282,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Received an error.
 		m.errorMessage = msg.err.Error()
 		// Return a command to continue listening.
+		// Determinar el contexto del error
+		if m.isLoadingPreferencias {
+			m.isLoadingPreferencias = false
+			m.statusMessage = "Error al cargar preferencias."
+		}
+		// Si el error ocurrió durante el streaming, seguir escuchando
+		if m.isPlaying {
+			return m, m.listenForMessagesCmd()
+		}
 		return m, m.listenForMessagesCmd()
 
 	case playbackFinishedMsg:

@@ -15,6 +15,8 @@ func (m model) View() string {
 		return getCatalogoView(&m)
 	case cancionView:
 		return getDetalleView(&m)
+	case preferenciasView:
+		return m.preferenciasView()
 	}
 
 	return "SIN VISTA\n\npresiona q para salir\n"
@@ -157,5 +159,51 @@ func getMenuView(m *model) string {
 	}
 
 	b.WriteString("\n  (Presiona 'q' para salir)")
+	return b.String()
+}
+
+func (m model) preferenciasView() string {
+	var b strings.Builder
+	b.WriteString("--- Mis Preferencias ---\n\n")
+
+	if m.isLoadingPreferencias {
+		b.WriteString("Cargando...\n")
+		return b.String()
+	}
+
+	if m.preferencias == nil {
+		b.WriteString("No se han podido cargar las preferencias.\n")
+		b.WriteString("Presiona 'r' para reintentar.\n")
+		return b.String()
+	}
+
+	// Renderizar preferencias
+	b.WriteString(fmt.Sprintf("Preferencias para Usuario ID: %d\n\n", m.preferencias.IdUsuario))
+
+	b.WriteString("Artistas Favoritos:\n")
+	if len(m.preferencias.PreferenciasArtistas) == 0 {
+		b.WriteString("  (Ninguno)\n")
+	}
+	for _, p := range m.preferencias.PreferenciasArtistas {
+		b.WriteString(fmt.Sprintf("  - %s (%d veces)\n", p.NombreArtista, p.NumeroPreferencias))
+	}
+
+	b.WriteString("\nGéneros Favoritos:\n")
+	if len(m.preferencias.PreferenciasGeneros) == 0 {
+		b.WriteString("  (Ninguno)\n")
+	}
+	for _, p := range m.preferencias.PreferenciasGeneros {
+		b.WriteString(fmt.Sprintf("  - %s (%d veces)\n", p.NombreGenero, p.NumeroPreferencias))
+	}
+
+	b.WriteString("\nIdiomas Favoritos:\n")
+	if len(m.preferencias.PreferenciasIdiomas) == 0 {
+		b.WriteString("  (Ninguno)\n")
+	}
+	for _, p := range m.preferencias.PreferenciasIdiomas {
+		b.WriteString(fmt.Sprintf("  - %s (%d veces)\n", p.NombreIdioma, p.NumeroPreferencias))
+	}
+
+	b.WriteString("\n\nPresiona 'r' para recargar.\n")
 	return b.String()
 }

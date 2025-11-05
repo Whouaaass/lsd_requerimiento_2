@@ -14,6 +14,9 @@ func goTo(m *model, state uint) (tea.Model, tea.Cmd) {
 		m.canciones = nil
 		m.cursor = 0
 		return m, m.fetchCancionesCmd()
+	case preferenciasView:
+		m.state = preferenciasView
+		return m, m.loadPreferenciasCmd()
 	case loginView:
 		m.state = loginView
 		m.user = nil                 // Limpia ID

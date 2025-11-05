@@ -7,6 +7,7 @@ import (
 type Config struct {
 	AudioStreamingAPIURL string
 	CancionesAPIURL      string
+	PreferenciasAPIURL   string
 	// LogFile is the path to the log file used by the filelogger package.
 	// It can be set via the LOG_FILE environment variable. If empty, the
 	// filelogger will fall back to `logs.txt`.
@@ -16,6 +17,7 @@ type Config struct {
 func Load() Config {
 	return Config{
 		CancionesAPIURL:      readVariable("CANCIONES_API_URL", "http://localhost:5000"),
+		PreferenciasAPIURL:   readVariable("PREFERENCIAS_API_URL", "http://localhost:5010"),
 		AudioStreamingAPIURL: readVariable("STREAMING_API_URL", "localhost:50051"),
 		LogFile:              readVariable("LOG_FILE", "logs.txt"),
 	}

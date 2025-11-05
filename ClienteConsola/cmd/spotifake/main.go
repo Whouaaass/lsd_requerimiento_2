@@ -12,6 +12,7 @@ import (
 	"musis.cliente/grpc-cliente/config"
 	"musis.cliente/grpc-cliente/internal/cli"
 	cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
+	preferenciasapi "musis.cliente/grpc-cliente/pkg/preferencias_api"
 	streamService "musis.cliente/grpc-cliente/pkg/streamingService"
 	pbStreaming "musis.servidordestreaming/grpc-servidor/serviciosStreaming"
 )
@@ -32,9 +33,10 @@ func main() {
 
 	// Inicializa el servicio de cancion
 	cancionesService := cancionesapi.NewCancionesAPIClient(cfg)
+	preferenciasService := preferenciasapi.NewPreferenciasAPIClient(cfg)
 
 	// Inicializa las vistas de la consola
-	model := cli.NewModel(streamService, cancionesService)
+	model := cli.NewModel(streamService, cancionesService, preferenciasService)
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

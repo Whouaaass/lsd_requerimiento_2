@@ -1,6 +1,9 @@
 package cli
 
-import cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
+import (
+	cancionesapi "musis.cliente/grpc-cliente/pkg/canciones_api"
+	preferenciasapi "musis.cliente/grpc-cliente/pkg/preferencias_api"
+)
 
 // statusMsg is a message to update the status line.
 type statusMsg string
@@ -20,4 +23,8 @@ type playbackFinishedMsg struct{}
 type cancionesLoadedMsg struct {
 	canciones []cancionesapi.MetadatoCancionDTO
 	err       error
+}
+
+type preferenciasLoadedMsg struct {
+	preferencias *preferenciasapi.PreferenciasUsuario
 }
