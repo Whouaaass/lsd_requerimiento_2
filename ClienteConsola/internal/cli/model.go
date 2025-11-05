@@ -255,6 +255,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case preferenciasView:
 			switch key {
+			case "esc", "b": // Volver al catálogo
+				return goTo(&m, menuView)
+			case "q", "ctrl+c":
+				return m, tea.Quit
+
 			case "r": // Recargar preferencias
 				m.isLoadingPreferencias = true
 				m.preferencias = nil
@@ -308,6 +313,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.canciones = msg.canciones
 			m.errorMessage = "" // Clear any previous error
 		}
+		return m, nil
+
+	case preferenciasLoadedMsg:
+		m.preferencias = msg.preferencias
+		m.isLoadingPreferencias = false
+		m.errorMessage = "" // Clear any previous error
 		return m, nil
 	}
 

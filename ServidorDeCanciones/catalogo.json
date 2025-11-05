@@ -14,5 +14,21 @@
     "artista": "Romeo Santos",
     "idioma": "ES",
     "ruta-almacenamiento": "../canciones/Ella muere por mi_Bachata_Romeo Santos.mp3"
+  },
+  {
+    "id": 3,
+    "titulo": "Gordo",
+    "genero": "Pop",
+    "artista": "Camilo",
+    "idioma": "ES",
+    "ruta-almacenamiento": "../canciones/Gordo_Pop_Camilo.mp3"
+  },
+  {
+    "id": 4,
+    "titulo": "Gordo Ingles",
+    "genero": "Pop",
+    "artista": "Camilo",
+    "idioma": "EN",
+    "ruta-almacenamiento": "../canciones/Gordo Ingles_Pop_Camilo.mp3"
   }
 ]
