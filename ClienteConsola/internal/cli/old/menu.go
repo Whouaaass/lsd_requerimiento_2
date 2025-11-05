@@ -1,15 +1,7 @@
 package cli
 
-import (
-	"context"
-	"fmt"
-	"sync"
-
-	"musis.cliente/grpc-cliente/pkg/audioplayer"
-	pb "musis.servidordecanciones/grpc-servidor/serviciosCancion"
-)
-
 // menuGeneros muestra la lista de géneros y procesa la selección.
+/*
 func (a *App) menuGeneros() error {
 	generos, err := a.wrapperCanciones.ListarGeneros()
 	if err != nil {
@@ -48,7 +40,8 @@ func (a *App) menuGeneros() error {
 	generoSel := generos[choice-1]
 	return a.menuCancionesGenero(generoSel)
 }
-
+*/
+/*
 // menuCancionesGenero lista canciones de un género y permite ver detalles.
 func (a *App) menuCancionesGenero(genero string) error {
 	canciones, err := a.wrapperCanciones.ListarCancionesGenero(genero)
@@ -101,14 +94,16 @@ func (a *App) menuCancionesGenero(genero string) error {
 		}
 	}
 }
+*/
 
 // menuDetalleCancion muestra detalles y opciones (volver, reproducir placeholder).
+/*
 func (a *App) menuDetalleCancion(c *pb.Cancion) error {
 	for {
 		clearTerminal()
 		printHeader()
 		printSectionTitle("Detalle de la canción")
-		printMetaDetailed(c)
+		//printMetaDetailed(c)
 		fmt.Println("1) Reproducir")
 		fmt.Println("0) Volver")
 		fmt.Println("9) Salir")
@@ -145,7 +140,8 @@ func (a *App) menuDetalleCancion(c *pb.Cancion) error {
 		}
 	}
 }
-
+*/
+/*
 func (a *App) menuReproduccionCancion(c *pb.Cancion) error {
 	var wg sync.WaitGroup
 	ctx, cancelCtx := context.WithCancel(context.Background())
@@ -156,7 +152,7 @@ func (a *App) menuReproduccionCancion(c *pb.Cancion) error {
 	clearTerminal()
 	printHeader()
 	printSectionTitle("Reproducción de la canción")
-	printMetaDetailed(c)
+	//printMetaDetailed(c)
 	fmt.Println()
 	printPrompt("Presiona ENTER para salir...")
 	cursorUp(1)
@@ -198,3 +194,4 @@ func (a *App) menuReproduccionCancion(c *pb.Cancion) error {
 
 	return nil
 }
+*/

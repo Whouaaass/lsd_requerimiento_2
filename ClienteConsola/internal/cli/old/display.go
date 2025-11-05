@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	pb "musis.servidordecanciones/grpc-servidor/serviciosCancion"
 )
 
 const (
@@ -69,6 +67,7 @@ var osExit = func(code int) {
 }
 
 // miniMeta presenta título, autor/banda y duración breve.
+/*
 func miniMeta(c *pb.Cancion) string {
 	duracion := secsToMinSec(int(c.DuracionS))
 	album := c.Album
@@ -81,13 +80,16 @@ func miniMeta(c *pb.Cancion) string {
 	}
 	return fmt.Sprintf("%s — %s (%s) [%s]", c.Titulo, autor, album, duracion)
 }
+*/
 
+/*
 func printMetaDetailed(c *pb.Cancion) {
 	fmt.Printf("%sTitulo:%s\t\t %s%s\n", ansiBold, ansiReset, c.Titulo, ansiReset)
 	fmt.Printf("%sBanda/Autor:%s\t %s%s\n", ansiBold, ansiReset, c.Autor, ansiReset)
 	fmt.Printf("%sAlbum:%s\t\t %s%s\n", ansiBold, ansiReset, c.Album, ansiReset)
 	fmt.Printf("%sGenero:%s\t\t %s%s\n\n", ansiBold, ansiReset, c.Genero, ansiReset)
 }
+*/
 
 func secsToMinSec(s int) string {
 	min := s / 60
