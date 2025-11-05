@@ -17,8 +17,8 @@ public class ReproduccionExtendedDTO {
     @NotNull
     private Long idUsuario;
 
-    @NotNull
-    private CancionDTO cancion;
+    private Long idCancion;
+
 
     
 }

@@ -2,9 +2,6 @@ package co.edu.unicauca.lsd.servidor_reproducciones.service.mappers;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-
-import co.edu.unicauca.lsd.servidor_reproducciones.domain.Cancion;
 import co.edu.unicauca.lsd.servidor_reproducciones.domain.Reproduccion;
 import co.edu.unicauca.lsd.servidor_reproducciones.model.ReproduccionDTO;
 import co.edu.unicauca.lsd.servidor_reproducciones.model.ReproduccionExtendedDTO;
@@ -12,22 +9,20 @@ import co.edu.unicauca.lsd.servidor_reproducciones.model.ReproduccionExtendedDTO
 @Mapper(componentModel = "spring")
 public interface ReproduccionMapper {
 
-    @Mapping(target = "idCancion", source = "cancion.id")
+    // Mapea entidad → DTO
+    @Mapping(target = "idCancion", source = "idCancion")
+    @Mapping(target = "idUsuario", source = "idUsuario")
     ReproduccionDTO toReproduccionDTO(Reproduccion entity);
 
-    @Mapping(target = "cancion", source = "idCancion", qualifiedByName = "idToCancion")
+    // Mapea DTO → entidad
+    @Mapping(target = "idCancion", source = "idCancion")
+    @Mapping(target = "idUsuario", source = "idUsuario")
     Reproduccion toReproduccion(ReproduccionDTO dto);
 
-    @Named("idToCancion")
-    default Cancion idToCancion(Long id) {
-        if (id == null) {
-            return null;
-        }
-        Cancion cancion = new Cancion();
-        cancion.setId(id);
-        return cancion;
-    }
+  
 
+    @Mapping(source = "idCancion", target = "idCancion")
     ReproduccionExtendedDTO toReproduccionExtendedDTO(Reproduccion entity);
+
 
 }
