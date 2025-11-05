@@ -74,6 +74,27 @@ services:
     networks:
       - default
     # No depende de RabbitMQ, por lo que puede iniciar independientemente
+  
+  servidor-preferencias:
+    build:
+      context: ./ServidorDePreferencias
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./ServidorDePreferencias:/app
+      - ~/.m2:/root/.m2
+    ports:
+      - "5010:5010"
+    environment:
+      # Sobrescribe las URLs de localhost para que apunten a los nombres de servicio de Docker
+      - CANCIONES_SERVICE_URL=http://servidor-canciones:5000
+      - REPRODUCCIONES_SERVICE_URL=http://servidor-reproducciones:8082
+      - SERVER_PORT=5010
+    networks:
+      - default
+    depends_on:
+      # Depende de los servicios que consume
+      - servidor-canciones
+      - servidor-reproducciones
 
   rabbitmq:
     image: rabbitmq:management
