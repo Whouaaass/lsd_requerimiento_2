@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "type": "kotlin",
+            "request": "launch",
+            "name": "Kotlin Launch",
+            "projectRoot": "${workspaceFolder}",
+            "mainClass": "app/src/main/java/co/edu/unicauca/spotifake_player/MainActivity.kt"
+        },
+        {
+            "type": "kotlin",
+            "request": "attach",
+            "name": "Kotlin Attach",
+            "hostName": "localhost",
+            "port": 8000,
+            "timeout": 30000
+        }
+    ]
+}
