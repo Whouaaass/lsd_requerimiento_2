@@ -1,0 +1,48 @@
+services:
+  servidor-streaming:
+    build:
+      context: ./ServidorDeStreaming
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./ServidorDeStreaming:/app
+      - /app/tmp
+      - ./canciones:/canciones
+    environment:
+      - GRPC_PORT=50051
+      - REPRODUCCIONES_API_URL=http://servidor-reproducciones:8082
+    ports:
+      - "50051:50051"    
+    command: sh -c "go run ./main"      
+    networks:
+      - default
+
+  servidor-canciones:
+    build:
+        context: ./ServidorDeCanciones
+        dockerfile: Dockerfile.dev
+    volumes:
+      - ./ServidorDeCanciones:/app
+      - /app/tmp
+      - ./canciones:/canciones
+    environment:      
+      - RABBITMQ_CANCIONES_URL=amqp://admin:1234@rabbitmq:5672/
+    ports:
+      - "5000:5000"    
+    command: sh -c "go run ./main"    
+    networks:
+      - default
+
+  envoy:
+    image: envoyproxy/envoy:dev-d23795f4c239087503da27c327448ef0132ca5fb
+    volumes:
+      - ./envoy-stream-grpc.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "9901:9901"
+      - "8080:8080"
+    command: envoy -c /etc/envoy/envoy.yaml
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
