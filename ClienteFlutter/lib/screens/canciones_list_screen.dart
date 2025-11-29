@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/metadato_cancion_dto.dart';
 import '../services/canciones_api_client.dart';
 
+import 'player_screen.dart';
+
 class CancionesListScreen extends StatefulWidget {
   const CancionesListScreen({super.key});
 
@@ -46,6 +48,14 @@ class _CancionesListScreenState extends State<CancionesListScreen> {
                 title: Text(cancion.titulo),
                 subtitle: Text('${cancion.artista} - ${cancion.genero}'),
                 trailing: Text(cancion.idioma),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlayerScreen(cancion: cancion),
+                    ),
+                  );
+                },
               );
             },
           );

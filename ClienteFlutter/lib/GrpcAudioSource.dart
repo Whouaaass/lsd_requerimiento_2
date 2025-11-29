@@ -1,94 +1,69 @@
 import 'dart:async';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:grpc/grpc.dart';
 import 'package:just_audio/just_audio.dart';
+import 'generated/serviciosStreaming.pbgrpc.dart';
 
 class GrpcAudioSource extends StreamAudioSource {
+  final CancionDTO cancion;
   final StreamController<List<int>> _controller = StreamController.broadcast();
-  StreamSubscription? _grpcSubscription;
-
-  // Añadimos un 'flag' para asegurarnos de que solo se inicie una vez
+  ClientChannel? _channel;
+  AudioServiceClient? _client;
   bool _isStreamStarted = false;
 
-  GrpcAudioSource(/* this._client */) : super(tag: 'grpc-stream');
-
-  // --- MÉTODO 'startStreaming()' ELIMINADO ---
-  // Ya no lo necesitamos aquí.
+  GrpcAudioSource(this.cancion) : super(tag: 'grpc-stream');
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
-
-    // --- LÓGICA DE INICIO MOVIDA AQUÍ ---
-    // Cuando just_audio pida los datos, empezamos el stream.
     if (!_isStreamStarted) {
       _isStreamStarted = true;
-      _startSimulatedStream(); // Llama a la función que inicia el stream
+      _startGrpcStream();
     }
-    // --- FIN DE LA NUEVA LÓGICA ---
-
     return StreamAudioResponse(
       sourceLength: null,
       contentLength: null,
       offset: 0,
       stream: _controller.stream,
-      contentType: 'audio/mpeg', // Asegúrate que coincida con tu archivo
+      contentType: 'audio/mpeg',
     );
   }
 
-  // Esta era la lógica de 'startStreaming', ahora en su propio método
-  void _startSimulatedStream() {
-    // TODO: Reemplaza con tu llamada gRPC real
-    final Stream<List<int>> grpcStream = _simulateGrpcStream();
+  void _startGrpcStream() async {
+    // Use 10.0.2.2 for Android emulator to access localhost of host machine
+    // Use localhost for iOS simulator or desktop
+    // For now defaulting to localhost, user might need to change this based on platform
+    const host = '10.0.2.2';
 
-    _grpcSubscription = grpcStream.listen(
-          (bytes) {
-        if (!_controller.isClosed) {
-          _controller.add(bytes);
-        }
-      },
-      onError: (e) {
-        if (!_controller.isClosed) {
-          _controller.addError(e);
-        }
-      },
-      onDone: () {
-        if (!_controller.isClosed) {
-          _controller.close();
-        }
-      },
+    _channel = ClientChannel(
+      host,
+      port: 50051,
+      options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
     );
-  }
+    _client = AudioServiceClient(_channel!);
 
-
-  @override
-  void dispose() {
-    _grpcSubscription?.cancel();
-    _controller.close();
-  }
-
-  // --- SIMULACIÓN (Asegúrate de que usa el archivo bueno) ---
-  Stream<List<int>> _simulateGrpcStream() async* {
-
-    // ¡ASEGÚRATE DE QUE ESTA ES LA RUTA CORRECTA!
-    const String assetPath = 'assets/audio/sample4.mp3';
-    const int chunkSize = 8192;
-    const Duration duration = Duration(milliseconds: 150);
+    // Assuming a dummy user ID for now as it's not provided in the context
+    final request = PeticionStreamDTO(idUsuario: 1, cancion: cancion);
 
     try {
-      final byteData = await rootBundle.load(assetPath);
-      final buffer = byteData.buffer.asUint8List();
-      print("Simulación: Archivo cargado (${assetPath}), tamaño: ${buffer.length} bytes");
-
-      for (int i = 0; i < buffer.length; i += chunkSize) {
-        final end = (i + chunkSize > buffer.length) ? buffer.length : (i + chunkSize);
-        yield buffer.sublist(i, end);
-        print("Simulación: Enviando chunk ${i ~/ chunkSize + 1}");
-        await Future.delayed(duration);
+      final stream = _client!.stremearCancion(request);
+      await for (var fragment in stream) {
+        if (!_controller.isClosed) {
+          _controller.add(fragment.data);
+        }
       }
-      print("Simulación: Stream completado.");
-
+      if (!_controller.isClosed) {
+        _controller.close();
+      }
     } catch (e) {
-      print("Error en simulación de stream: $e");
-      yield* Stream.error(e);
+      print("Error in gRPC stream: $e");
+      if (!_controller.isClosed) {
+        _controller.addError(e);
+      }
     }
+  }
+
+  // Manually called to clean up
+  Future<void> dispose() async {
+    await _channel?.shutdown();
+    await _controller.close();
   }
 }
