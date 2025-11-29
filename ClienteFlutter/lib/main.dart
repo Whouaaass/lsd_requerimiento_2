@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-// 1. Importa tu nuevo widget
-import 'grpc_player_widget.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'screens/canciones_list_screen.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -12,15 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'gRPC Audio Player', // Título actualizado
+      title: 'Cliente Flutter',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      // 2. Establece GrpcPlayerWidget como la pantalla de inicio
-      home: const GrpcPlayerWidget(),
+      home: const CancionesListScreen(),
     );
   }
 }
-
-// 3. El widget MyHomePage y su estado han sido eliminados.
