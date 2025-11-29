@@ -32,45 +32,54 @@ class StompListenerService {
   /// [nickname] - User nickname for connection
   /// [songId] - Song ID to subscribe to
   Future<void> connect(String url, String nickname, int songId) async {
-    if (_stompClient != null) {
-      await disconnect();
+    try {
+      if (_stompClient != null) {
+        await disconnect();
+      }
+
+      _currentNickname = nickname;
+
+      _stompClient = StompClient(
+        config: StompConfig(
+          url: url,
+          onConnect: (StompFrame frame) {
+            _isConnected = true;
+            _connectionController.add(true);
+            print('✅ STOMP connected successfully');
+
+            // Subscribe to song channel
+            _subscribeToSongChannel(songId);
+          },
+          onWebSocketError: (dynamic error) {
+            print('❌ WebSocket error: $error');
+            _isConnected = false;
+            _connectionController.add(false);
+          },
+          onStompError: (StompFrame frame) {
+            print('❌ STOMP error: ${frame.body}');
+            _isConnected = false;
+            _connectionController.add(false);
+          },
+          onDisconnect: (StompFrame frame) {
+            _isConnected = false;
+            _connectionController.add(false);
+            print('🔌 STOMP disconnected');
+          },
+          // Add nickname to connection headers
+          stompConnectHeaders: {'nickname': nickname},
+          webSocketConnectHeaders: {'nickname': nickname},
+        ),
+      );
+
+      if (_stompClient != null) {
+        _stompClient!.activate();
+      }
+    } catch (e) {
+      print('❌ Error creating STOMP client: $e');
+      _isConnected = false;
+      _connectionController.add(false);
+      rethrow;
     }
-
-    _currentNickname = nickname;
-
-    _stompClient = StompClient(
-      config: StompConfig(
-        url: url,
-        onConnect: (StompFrame frame) {
-          _isConnected = true;
-          _connectionController.add(true);
-          print('✅ STOMP connected successfully');
-
-          // Subscribe to song channel
-          _subscribeToSongChannel(songId);
-        },
-        onWebSocketError: (dynamic error) {
-          print('❌ WebSocket error: $error');
-          _isConnected = false;
-          _connectionController.add(false);
-        },
-        onStompError: (StompFrame frame) {
-          print('❌ STOMP error: ${frame.body}');
-          _isConnected = false;
-          _connectionController.add(false);
-        },
-        onDisconnect: (StompFrame frame) {
-          _isConnected = false;
-          _connectionController.add(false);
-          print('🔌 STOMP disconnected');
-        },
-        // Add nickname to connection headers
-        stompConnectHeaders: {'nickname': nickname},
-        webSocketConnectHeaders: {'nickname': nickname},
-      ),
-    );
-
-    _stompClient!.activate();
   }
 
   /// Subscribe to song channel to receive listener activity
@@ -145,9 +154,9 @@ class StompListenerService {
   }
 
   /// Dispose of resources
-  void dispose() {
-    disconnect();
-    _messageController.close();
-    _connectionController.close();
+  Future<void> dispose() async {
+    await disconnect();
+    await _messageController.close();
+    await _connectionController.close();
   }
 }

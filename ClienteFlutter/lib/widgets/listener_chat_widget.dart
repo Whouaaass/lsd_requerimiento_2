@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/reacciones_api/models/listener_message.dart';
 import '../services/reacciones_api/stomp_listener_service.dart';
+import 'floating_emoji_overlay.dart';
 
 class ListenerChatWidget extends StatefulWidget {
   final String webSocketUrl;
@@ -44,6 +45,13 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
             _messages.add(message);
           });
           _scrollToBottom();
+
+          // Trigger floating emoji animation for reactions
+          if (message.type == 'reaction' &&
+              message.content != null &&
+              message.user != widget.nickname) {
+            _showFloatingEmoji(message.content!);
+          }
         }
       },
       onError: (error) {
@@ -90,15 +98,43 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
     }
   }
 
+  void _showFloatingEmoji(String reaction) {
+    final overlay = FloatingEmojiOverlay.of(context);
+    if (overlay != null) {
+      final emoji = _getEmojiForReaction(reaction);
+      overlay.showEmoji(emoji);
+    }
+  }
+
+  String _getEmojiForReaction(String reaction) {
+    switch (reaction) {
+      case 'like':
+        return '👍';
+      case 'heart':
+        return '❤️';
+      case 'sad':
+        return '😢';
+      case 'fun':
+        return '😄';
+      default:
+        return '👋';
+    }
+  }
+
   void _sendReaction(String reaction) {
     _stompService.sendReaction(widget.songId, reaction);
+    // Also show local animation for immediate feedback
+    _showFloatingEmoji(reaction);
   }
 
   @override
   void dispose() {
     _messageSubscription?.cancel();
     _connectionSubscription?.cancel();
-    _stompService.dispose();
+    // Don't await - just fire and forget since dispose() can't be async
+    _stompService.dispose().catchError((e) {
+      print('Error disposing STOMP service: $e');
+    });
     _scrollController.dispose();
     super.dispose();
   }
@@ -220,9 +256,7 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
                 _ReactionButton(
                   emoji: '❤️',
                   label: 'Heart',
-                  onPressed: _isConnected
-                      ? () => _sendReaction('hearth')
-                      : null,
+                  onPressed: _isConnected ? () => _sendReaction('heart') : null,
                 ),
                 _ReactionButton(
                   emoji: '😢',

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
 class ListenerMessage {
-  final String
-  type; // "reaction", "connection", "disconnection", "playing", "stopped"
-  final String? content; // "like", "hearth", "sad", "fun"
+  // "reaction", "connected", "disconnected", "playing", "stopped"
+  final String type;
+  // "like", "heart", "sad", "fun"
+  final String? content;
   final String user;
-  final int idCancion;
+  final int? idCancion;
   final DateTime timestamp;
 
   ListenerMessage({
     required this.type,
     this.content,
     required this.user,
-    required this.idCancion,
+    this.idCancion,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -21,7 +22,7 @@ class ListenerMessage {
       type: json['type'] as String,
       content: json['content'] as String?,
       user: json['userNickname'] as String,
-      idCancion: json['idCancion'] as int,
+      idCancion: json['idCancion'] as int?,
     );
   }
 
@@ -36,9 +37,9 @@ class ListenerMessage {
 
   String getDisplayText() {
     switch (type) {
-      case 'connection':
+      case 'connected':
         return '$user joined the listening session';
-      case 'disconnection':
+      case 'disconnected':
         return '$user left the listening session';
       case 'reaction':
         final emoji = _getReactionEmoji(content);
@@ -56,7 +57,7 @@ class ListenerMessage {
     switch (reaction) {
       case 'like':
         return '👍';
-      case 'hearth':
+      case 'heart':
         return '❤️';
       case 'sad':
         return '😢';

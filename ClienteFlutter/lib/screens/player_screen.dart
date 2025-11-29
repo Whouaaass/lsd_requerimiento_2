@@ -6,6 +6,7 @@ import '../generated/serviciosStreaming.pb.dart';
 import '../services/grpc_audio_source.dart';
 import '../widgets/player_controls_widget.dart';
 import '../widgets/listener_chat_widget.dart';
+import '../widgets/floating_emoji_overlay.dart';
 
 class PlayerScreen extends StatefulWidget {
   final MetadatoCancionDTO cancion;
@@ -126,33 +127,35 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Now Playing'), elevation: 2),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Player Controls Widget
-            PlayerControlsWidget(
-              songTitle: widget.cancion.titulo,
-              artistName: widget.cancion.artista,
-              isPlaying: _isPlaying,
-              isLoading: _isLoading,
-              downloadProgress: _downloadProgress,
-              currentPosition: _currentPosition,
-              totalDuration: _totalDuration,
-              onPlayPause: _handlePlayPause,
-              onSeek: _handleSeek,
-            ),
+    return FloatingEmojiOverlay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Now Playing'), elevation: 2),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Player Controls Widget
+              PlayerControlsWidget(
+                songTitle: widget.cancion.titulo,
+                artistName: widget.cancion.artista,
+                isPlaying: _isPlaying,
+                isLoading: _isLoading,
+                downloadProgress: _downloadProgress,
+                currentPosition: _currentPosition,
+                totalDuration: _totalDuration,
+                onPlayPause: _handlePlayPause,
+                onSeek: _handleSeek,
+              ),
 
-            // Listener Chat Widget
-            ListenerChatWidget(
-              webSocketUrl: webSocketUrl,
-              songId: widget.cancion.id,
-              nickname: 'User', // TODO: Get from user profile/settings
-            ),
+              // Listener Chat Widget
+              ListenerChatWidget(
+                webSocketUrl: webSocketUrl,
+                songId: widget.cancion.id,
+                nickname: 'User', // TODO: Get from user profile/settings
+              ),
 
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
