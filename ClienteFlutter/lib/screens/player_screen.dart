@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/metadato_cancion_dto.dart';
+import '../services/canciones_api/models/metadato_cancion_dto.dart';
 import '../generated/serviciosStreaming.pb.dart';
 import '../services/grpc_audio_source.dart';
 import '../widgets/player_controls_widget.dart';
@@ -28,7 +28,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // WebSocket URL - configure this based on your server
   // For Android emulator: ws://10.0.2.2:PORT
   // For iOS simulator/desktop: ws://localhost:PORT
-  static final String webSocketUrl = 'ws://${dotenv.env['CANCIONES_API_URL'] ?? ""}/ws';
+  static final String webSocketUrl =
+      'ws://${dotenv.env['REACCIONES_API_URL'] ?? ""}/ws-raw';
 
   @override
   void initState() {
@@ -147,6 +148,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ListenerChatWidget(
               webSocketUrl: webSocketUrl,
               songId: widget.cancion.id,
+              nickname: 'User', // TODO: Get from user profile/settings
             ),
 
             const SizedBox(height: 20),

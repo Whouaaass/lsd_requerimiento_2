@@ -1,92 +1,18 @@
-import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-
-class ListenerMessage {
-  final String type; // "connected", "disconnected", "reaccion"
-  final String? content; // "like", "hearth", "sad", "fun"
-  final String user;
-  final DateTime timestamp;
-
-  ListenerMessage({
-    required this.type,
-    this.content,
-    required this.user,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
-
-  factory ListenerMessage.fromJson(Map<String, dynamic> json) {
-    return ListenerMessage(
-      type: json['type'] as String,
-      content: json['content'] as String?,
-      user: json['user'] as String,
-    );
-  }
-
-  String getDisplayText() {
-    switch (type) {
-      case 'connected':
-        return '$user joined the listening session';
-      case 'disconnected':
-        return '$user left the listening session';
-      case 'reaccion':
-        final emoji = _getReactionEmoji(content);
-        return '$user reacted $emoji';
-      default:
-        return '$user: $type';
-    }
-  }
-
-  String _getReactionEmoji(String? reaction) {
-    switch (reaction) {
-      case 'like':
-        return '👍';
-      case 'hearth':
-        return '❤️';
-      case 'sad':
-        return '😢';
-      case 'fun':
-        return '😄';
-      default:
-        return '👋';
-    }
-  }
-
-  IconData getIcon() {
-    switch (type) {
-      case 'connected':
-        return Icons.person_add;
-      case 'disconnected':
-        return Icons.person_remove;
-      case 'reaccion':
-        return Icons.favorite;
-      default:
-        return Icons.message;
-    }
-  }
-
-  Color getColor() {
-    switch (type) {
-      case 'connected':
-        return Colors.green;
-      case 'disconnected':
-        return Colors.orange;
-      case 'reaccion':
-        return Colors.pink;
-      default:
-        return Colors.blue;
-    }
-  }
-}
+import '../services/reacciones_api/models/listener_message.dart';
+import '../services/reacciones_api/stomp_listener_service.dart';
 
 class ListenerChatWidget extends StatefulWidget {
   final String webSocketUrl;
   final int songId;
+  final String nickname;
 
   const ListenerChatWidget({
     super.key,
     required this.webSocketUrl,
     required this.songId,
+    this.nickname = 'Anonymous',
   });
 
   @override
@@ -94,68 +20,60 @@ class ListenerChatWidget extends StatefulWidget {
 }
 
 class _ListenerChatWidgetState extends State<ListenerChatWidget> {
-  WebSocketChannel? _channel;
+  final StompListenerService _stompService = StompListenerService();
   final List<ListenerMessage> _messages = [];
   bool _isConnected = false;
   String _connectionStatus = 'Connecting...';
   final ScrollController _scrollController = ScrollController();
 
+  StreamSubscription<ListenerMessage>? _messageSubscription;
+  StreamSubscription<bool>? _connectionSubscription;
+
   @override
   void initState() {
     super.initState();
-    _connectWebSocket();
+    _connectToService();
   }
 
-  void _connectWebSocket() {
-    try {
-      _channel = WebSocketChannel.connect(Uri.parse(widget.webSocketUrl));
+  void _connectToService() {
+    // Subscribe to message stream
+    _messageSubscription = _stompService.messageStream.listen(
+      (message) {
+        if (mounted) {
+          setState(() {
+            _messages.add(message);
+          });
+          _scrollToBottom();
+        }
+      },
+      onError: (error) {
+        print('Message stream error: $error');
+      },
+    );
 
-      setState(() {
-        _isConnected = true;
-        _connectionStatus = 'Connected';
-      });
+    // Subscribe to connection state stream
+    _connectionSubscription = _stompService.connectionStateStream.listen((
+      isConnected,
+    ) {
+      if (mounted) {
+        setState(() {
+          _isConnected = isConnected;
+          _connectionStatus = isConnected ? 'Connected' : 'Disconnected';
+        });
+      }
+    });
 
-      _channel!.stream.listen(
-        (message) {
-          try {
-            final data = jsonDecode(message as String);
-            final listenerMessage = ListenerMessage.fromJson(data);
-
-            if (mounted) {
-              setState(() {
-                _messages.add(listenerMessage);
-              });
-              _scrollToBottom();
-            }
-          } catch (e) {
-            print('Error parsing message: $e');
-          }
-        },
-        onError: (error) {
-          print('WebSocket error: $error');
+    // Connect to STOMP server
+    _stompService
+        .connect(widget.webSocketUrl, widget.nickname, widget.songId)
+        .catchError((error) {
+          print('Failed to connect: $error');
           if (mounted) {
             setState(() {
-              _isConnected = false;
-              _connectionStatus = 'Error: $error';
+              _connectionStatus = 'Failed to connect';
             });
           }
-        },
-        onDone: () {
-          if (mounted) {
-            setState(() {
-              _isConnected = false;
-              _connectionStatus = 'Disconnected';
-            });
-          }
-        },
-      );
-    } catch (e) {
-      print('Failed to connect: $e');
-      setState(() {
-        _isConnected = false;
-        _connectionStatus = 'Failed to connect';
-      });
-    }
+        });
   }
 
   void _scrollToBottom() {
@@ -172,9 +90,15 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
     }
   }
 
+  void _sendReaction(String reaction) {
+    _stompService.sendReaction(widget.songId, reaction);
+  }
+
   @override
   void dispose() {
-    _channel?.sink.close();
+    _messageSubscription?.cancel();
+    _connectionSubscription?.cancel();
+    _stompService.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -277,6 +201,42 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
                     },
                   ),
           ),
+
+          // Reaction Buttons
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _ReactionButton(
+                  emoji: '👍',
+                  label: 'Like',
+                  onPressed: _isConnected ? () => _sendReaction('like') : null,
+                ),
+                _ReactionButton(
+                  emoji: '❤️',
+                  label: 'Heart',
+                  onPressed: _isConnected
+                      ? () => _sendReaction('hearth')
+                      : null,
+                ),
+                _ReactionButton(
+                  emoji: '😢',
+                  label: 'Sad',
+                  onPressed: _isConnected ? () => _sendReaction('sad') : null,
+                ),
+                _ReactionButton(
+                  emoji: '😄',
+                  label: 'Fun',
+                  onPressed: _isConnected ? () => _sendReaction('fun') : null,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -293,5 +253,50 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
     } else {
       return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
     }
+  }
+}
+
+class _ReactionButton extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final VoidCallback? onPressed;
+
+  const _ReactionButton({
+    required this.emoji,
+    required this.label,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: onPressed != null ? Colors.white : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: onPressed != null
+                ? Colors.blue.shade200
+                : Colors.grey.shade300,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: onPressed != null ? Colors.black87 : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

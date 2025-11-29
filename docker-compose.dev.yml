@@ -59,6 +59,7 @@ services:
     depends_on:
       # Nos aseguramos que rabbitmq inicie primero
       - rabbitmq
+  
   servidor-reproducciones:
     build:
       context: ./ServidorDeReproducciones
@@ -98,17 +99,18 @@ services:
 
   servidor-reacciones:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: servidorchat-dev
+      context: ./ServidorDeReacciones
+      dockerfile: Dockerfile.dev    
     ports:
       - "5011:5011"
     volumes:
-      - .:/app               # Mount your source code
-      - ~/.m2:/root/.m2      # Cache Maven dependencies (important!)
+      - ./ServidorDeReacciones:/app
+      - ~/.m2:/root/.m2
     environment:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload
     command: mvn -ntp spring-boot:run
+    networks:
+      - default
  
   rabbitmq:
     image: rabbitmq:management

@@ -1,3 +1,4 @@
+# Este es el docker compose para la 3ra entrega (no son necesarios todos los servicios)
 services:
   servidor-streaming:
     build:
@@ -35,16 +36,17 @@ services:
   servidor-reacciones:
     build:
       context: ./ServidorDeReacciones
-      dockerfile: Dockerfile.dev
-    container_name: servidorchat-dev
+      dockerfile: Dockerfile.dev    
     ports:
       - "5011:5011"
     volumes:
-      - .:/app               # Mount your source code
-      - ~/.m2:/root/.m2      # Cache Maven dependencies (important!)
+      - ./ServidorDeReacciones:/app
+      - ~/.m2:/root/.m2
     environment:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload
     command: mvn -ntp spring-boot:run
+    networks:
+      - default
   
   envoy:
     image: envoyproxy/envoy:dev-d23795f4c239087503da27c327448ef0132ca5fb
@@ -54,10 +56,11 @@ services:
       - "9901:9901"
       - "8080:8080"
     command: envoy -c /etc/envoy/envoy.yaml
+    depends_on:
+      - servidor-streaming
     networks:
       - default
       
-
 networks:
   default:
     driver: bridge

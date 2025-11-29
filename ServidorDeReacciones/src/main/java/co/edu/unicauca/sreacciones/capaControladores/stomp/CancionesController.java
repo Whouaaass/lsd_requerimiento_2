@@ -17,6 +17,7 @@ public class CancionesController {
     @MessageMapping("/enviar")
     public void enviarMensajePrivado(MessageCancionDTO message) {        
         String destination = "/cancion/" + message.getIdCancion();
+        System.out.println("Enviando mensaje \"" + message.getContent() + "\" Al destino " + destination);
         simpMessagingTemplate.convertAndSend(destination, message);
     }
 

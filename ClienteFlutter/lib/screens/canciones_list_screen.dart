@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../models/metadato_cancion_dto.dart';
-import '../services/canciones_api_client.dart';
+import '../services/canciones_api/models/metadato_cancion_dto.dart';
+import '../services/canciones_api/canciones_api_client.dart';
 
 import 'player_screen.dart';
 

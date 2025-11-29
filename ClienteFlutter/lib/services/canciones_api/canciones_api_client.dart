@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../models/metadato_cancion_dto.dart';
+import 'models/metadato_cancion_dto.dart';
 
 class CancionesAPIClient {
   final String baseURL;
