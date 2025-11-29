@@ -26,6 +26,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
 
+  // GlobalKey to access ListenerChatWidget state
+  final GlobalKey<ListenerChatWidgetState> _chatWidgetKey =
+      GlobalKey<ListenerChatWidgetState>();
+
   // WebSocket URL - configure this based on your server
   // For Android emulator: ws://10.0.2.2:PORT
   // For iOS simulator/desktop: ws://localhost:PORT
@@ -109,8 +113,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void _handlePlayPause() {
     if (_isPlaying) {
       _player.pause();
+      // Send stopped status
+      _chatWidgetKey.currentState?.stompService.sendStoppedStatus(
+        widget.cancion.id,
+      );
     } else {
       _player.play();
+      // Send playing status
+      _chatWidgetKey.currentState?.stompService.sendPlayingStatus(
+        widget.cancion.id,
+      );
     }
   }
 
@@ -148,6 +160,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
               // Listener Chat Widget
               ListenerChatWidget(
+                key: _chatWidgetKey,
                 webSocketUrl: webSocketUrl,
                 songId: widget.cancion.id,
                 nickname: 'User', // TODO: Get from user profile/settings

@@ -17,10 +17,10 @@ class ListenerChatWidget extends StatefulWidget {
   });
 
   @override
-  State<ListenerChatWidget> createState() => _ListenerChatWidgetState();
+  ListenerChatWidgetState createState() => ListenerChatWidgetState();
 }
 
-class _ListenerChatWidgetState extends State<ListenerChatWidget> {
+class ListenerChatWidgetState extends State<ListenerChatWidget> {
   final StompListenerService _stompService = StompListenerService();
   final List<ListenerMessage> _messages = [];
   bool _isConnected = false;
@@ -29,6 +29,9 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
 
   StreamSubscription<ListenerMessage>? _messageSubscription;
   StreamSubscription<bool>? _connectionSubscription;
+
+  /// Expose STOMP service for parent widgets to send status updates
+  StompListenerService get stompService => _stompService;
 
   @override
   void initState() {
@@ -50,7 +53,7 @@ class _ListenerChatWidgetState extends State<ListenerChatWidget> {
           if (message.type == 'reaction' &&
               message.content != null &&
               message.user != widget.nickname) {
-            _showFloatingEmoji(message.content!);
+            _showFloatingEmoji(message.content ?? '');
           }
         }
       },

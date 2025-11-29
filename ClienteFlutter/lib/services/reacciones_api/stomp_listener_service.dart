@@ -72,7 +72,7 @@ class StompListenerService {
       );
 
       if (_stompClient != null) {
-        _stompClient!.activate();
+        _stompClient?.activate();
       }
     } catch (e) {
       print('❌ Error creating STOMP client: $e');
@@ -96,12 +96,12 @@ class StompListenerService {
     final destination = '/cancion/$songId';
     print('📡 Subscribing to $destination');
 
-    _subscription = _stompClient!.subscribe(
+    _subscription = _stompClient?.subscribe(
       destination: destination,
       callback: (StompFrame frame) {
         if (frame.body != null) {
           try {
-            final data = jsonDecode(frame.body!);
+            final data = jsonDecode(frame.body ?? '{}');
             final message = ListenerMessage.fromJson(data);
             _messageController.add(message);
             print('📨 Received message: ${message.type} from ${message.user}');
@@ -116,7 +116,7 @@ class StompListenerService {
   /// Send a reaction to the server
   ///
   /// [songId] - Song ID
-  /// [reaction] - Reaction type: "like", "hearth", "sad", "fun"
+  /// [reaction] - Reaction type: "like", "heart", "sad", "fun"
   void sendReaction(int songId, String reaction) {
     if (_stompClient == null || !_isConnected) {
       print('⚠️ Cannot send reaction: not connected');
@@ -130,12 +130,60 @@ class StompListenerService {
       'userNickname': _currentNickname ?? 'Anonymous',
     };
 
-    _stompClient!.send(
+    _stompClient?.send(
       destination: '/apiCanciones/enviar',
       body: jsonEncode(message),
     );
 
     print('📤 Sent reaction: $reaction for song $songId');
+  }
+
+  /// Send playing status to the server
+  ///
+  /// [songId] - Song ID that started playing
+  void sendPlayingStatus(int songId) {
+    if (_stompClient == null || !_isConnected) {
+      print('⚠️ Cannot send playing status: not connected');
+      return;
+    }
+
+    final message = {
+      'type': 'playing',
+      'content': null,
+      'idCancion': songId,
+      'userNickname': _currentNickname ?? 'Anonymous',
+    };
+
+    _stompClient?.send(
+      destination: '/apiCanciones/enviar',
+      body: jsonEncode(message),
+    );
+
+    print('▶️ Sent playing status for song $songId');
+  }
+
+  /// Send stopped status to the server
+  ///
+  /// [songId] - Song ID that stopped playing
+  void sendStoppedStatus(int songId) {
+    if (_stompClient == null || !_isConnected) {
+      print('⚠️ Cannot send stopped status: not connected');
+      return;
+    }
+
+    final message = {
+      'type': 'stopped',
+      'content': null,
+      'idCancion': songId,
+      'userNickname': _currentNickname ?? 'Anonymous',
+    };
+
+    _stompClient?.send(
+      destination: '/apiCanciones/enviar',
+      body: jsonEncode(message),
+    );
+
+    print('⏹️ Sent stopped status for song $songId');
   }
 
   /// Disconnect from STOMP server
@@ -144,7 +192,7 @@ class StompListenerService {
     _subscription = null;
 
     if (_stompClient != null) {
-      _stompClient!.deactivate();
+      _stompClient?.deactivate();
       _stompClient = null;
     }
 
