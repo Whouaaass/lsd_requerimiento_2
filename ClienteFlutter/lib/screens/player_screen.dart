@@ -3,6 +3,8 @@ import 'package:just_audio/just_audio.dart';
 import '../models/metadato_cancion_dto.dart';
 import '../generated/serviciosStreaming.pb.dart';
 import '../GrpcAudioSource.dart';
+import '../widgets/player_controls_widget.dart';
+import '../widgets/listener_chat_widget.dart';
 
 class PlayerScreen extends StatefulWidget {
   final MetadatoCancionDTO cancion;
@@ -18,6 +20,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
   late GrpcAudioSource _audioSource;
   bool _isPlaying = false;
   bool _isLoading = true;
+  DownloadProgress? _downloadProgress;
+  Duration _currentPosition = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+
+  // WebSocket URL - configure this based on your server
+  // For Android emulator: ws://10.0.2.2:PORT
+  // For iOS simulator/desktop: ws://localhost:PORT
+  static const String webSocketUrl = 'ws://10.0.2.2:8080/ws';
 
   @override
   void initState() {
@@ -35,13 +45,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
       genero: widget.cancion.genero,
       idioma: widget.cancion.idioma,
       rutaAlmacenamiento: widget.cancion.rutaAlmacenamiento,
-      // Add other fields if necessary
+      duracionS: widget.cancion.duracion.toInt(),
     );
 
     _audioSource = GrpcAudioSource(cancionDto);
 
+    // Listen to download progress
+    _audioSource.progressStream.listen((progress) {
+      if (mounted) {
+        setState(() {
+          _downloadProgress = progress;
+        });
+      }
+    });
+
     try {
       await _player.setAudioSource(_audioSource);
+
+      // Listen to player state
       _player.playerStateStream.listen((state) {
         if (mounted) {
           setState(() {
@@ -52,6 +73,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
           });
         }
       });
+
+      // Listen to playback position
+      _player.positionStream.listen((position) {
+        if (mounted) {
+          setState(() {
+            _currentPosition = position;
+          });
+        }
+      });
+
+      // Listen to duration
+      _player.durationStream.listen((duration) {
+        if (mounted && duration != null) {
+          setState(() {
+            _totalDuration = duration;
+          });
+        }
+      });
+
       _player.play();
     } catch (e) {
       print("Error loading audio: $e");
@@ -61,6 +101,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
         ).showSnackBar(SnackBar(content: Text('Error loading audio: $e')));
       }
     }
+  }
+
+  void _handlePlayPause() {
+    if (_isPlaying) {
+      _player.pause();
+    } else {
+      _player.play();
+    }
+  }
+
+  void _handleSeek(Duration position) {
+    _player.seek(position);
   }
 
   @override
@@ -73,49 +125,30 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Now Playing')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
+      appBar: AppBar(title: const Text('Now Playing'), elevation: 2),
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.music_note, size: 100, color: Colors.blue),
-            const SizedBox(height: 30),
-            Text(
-              widget.cancion.titulo,
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
+            // Player Controls Widget
+            PlayerControlsWidget(
+              songTitle: widget.cancion.titulo,
+              artistName: widget.cancion.artista,
+              isPlaying: _isPlaying,
+              isLoading: _isLoading,
+              downloadProgress: _downloadProgress,
+              currentPosition: _currentPosition,
+              totalDuration: _totalDuration,
+              onPlayPause: _handlePlayPause,
+              onSeek: _handleSeek,
             ),
-            const SizedBox(height: 10),
-            Text(
-              widget.cancion.artista,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
+
+            // Listener Chat Widget
+            ListenerChatWidget(
+              webSocketUrl: webSocketUrl,
+              songId: widget.cancion.id,
             ),
-            const SizedBox(height: 50),
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    iconSize: 64,
-                    icon: Icon(
-                      _isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_filled,
-                    ),
-                    onPressed: () {
-                      if (_isPlaying) {
-                        _player.pause();
-                      } else {
-                        _player.play();
-                      }
-                    },
-                  ),
-                ],
-              ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),

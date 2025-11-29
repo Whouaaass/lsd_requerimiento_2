@@ -3,14 +3,38 @@ import 'package:grpc/grpc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'generated/serviciosStreaming.pbgrpc.dart';
 
+// Class to hold download progress information
+class DownloadProgress {
+  final int bytesDownloaded;
+  final int totalBytes;
+
+  DownloadProgress({required this.bytesDownloaded, required this.totalBytes});
+
+  double get progress => totalBytes > 0 ? bytesDownloaded / totalBytes : 0.0;
+}
+
 class GrpcAudioSource extends StreamAudioSource {
   final CancionDTO cancion;
   final StreamController<List<int>> _controller = StreamController.broadcast();
+  final StreamController<DownloadProgress> _progressController =
+      StreamController.broadcast();
   ClientChannel? _channel;
   AudioServiceClient? _client;
   bool _isStreamStarted = false;
+  int _bytesDownloaded = 0;
+  int _totalBytes = 0;
 
-  GrpcAudioSource(this.cancion) : super(tag: 'grpc-stream');
+  GrpcAudioSource(this.cancion) : super(tag: 'grpc-stream') {
+    // Estimate total bytes based on duration
+    // Assuming average bitrate of 128 kbps (16 KB/s) for MP3
+    // This is an estimate, actual size may vary
+    if (cancion.hasDuracionS()) {
+      _totalBytes = cancion.duracionS * 16 * 1024; // 16 KB per second
+    }
+  }
+
+  // Expose progress stream
+  Stream<DownloadProgress> get progressStream => _progressController.stream;
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
@@ -48,15 +72,32 @@ class GrpcAudioSource extends StreamAudioSource {
       await for (var fragment in stream) {
         if (!_controller.isClosed) {
           _controller.add(fragment.data);
+
+          // Update download progress
+          _bytesDownloaded += fragment.data.length;
+          if (!_progressController.isClosed) {
+            _progressController.add(
+              DownloadProgress(
+                bytesDownloaded: _bytesDownloaded,
+                totalBytes: _totalBytes,
+              ),
+            );
+          }
         }
       }
       if (!_controller.isClosed) {
         _controller.close();
       }
+      if (!_progressController.isClosed) {
+        _progressController.close();
+      }
     } catch (e) {
       print("Error in gRPC stream: $e");
       if (!_controller.isClosed) {
         _controller.addError(e);
+      }
+      if (!_progressController.isClosed) {
+        _progressController.addError(e);
       }
     }
   }
@@ -65,5 +106,6 @@ class GrpcAudioSource extends StreamAudioSource {
   Future<void> dispose() async {
     await _channel?.shutdown();
     await _controller.close();
+    await _progressController.close();
   }
 }

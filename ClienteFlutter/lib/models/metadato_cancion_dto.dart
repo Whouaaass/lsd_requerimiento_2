@@ -5,6 +5,7 @@ class MetadatoCancionDTO {
   final String artista;
   final String idioma;
   final String rutaAlmacenamiento;
+  final double duracion;
 
   MetadatoCancionDTO({
     required this.titulo,
@@ -13,6 +14,7 @@ class MetadatoCancionDTO {
     required this.idioma,
     required this.rutaAlmacenamiento,
     required this.id,
+    required this.duracion,
   });
 
   factory MetadatoCancionDTO.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class MetadatoCancionDTO {
       idioma: json['idioma'] as String,
       rutaAlmacenamiento: json['ruta-almacenamiento'] as String,
       id: json['id'] as int,
+      duracion: json['duracion'] as double,
     );
   }
 }
