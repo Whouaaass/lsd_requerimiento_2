@@ -3,6 +3,7 @@ package capafachada
 import (
 	capaaccesoadatos "almacenamiento/capaAccesoADatos"
 	dtos "almacenamiento/capaFachadaServices/DTOs"
+	"almacenamiento/capaFachadaServices/services"
 	componnteconexioncola "almacenamiento/componnteConexionCola"
 	"almacenamiento/config"
 	"fmt"
@@ -20,7 +21,7 @@ func NuevaFachadaAlmacenamiento(cfg *config.Config) *FachadaAlmacenamiento {
 
 	repo := capaaccesoadatos.GetRepositorioCanciones()
 
-	conexionCola := componnteconexioncola.NewRabbitPublisher(cfg)	
+	conexionCola := componnteconexioncola.NewRabbitPublisher(cfg)
 
 	return &FachadaAlmacenamiento{
 		repo:         repo,
@@ -30,7 +31,7 @@ func NuevaFachadaAlmacenamiento(cfg *config.Config) *FachadaAlmacenamiento {
 }
 
 func (thisF *FachadaAlmacenamiento) GuardarCancion(objCancion dtos.CancionAlmacenarDTOInput, data []byte) error {
-	thisF.conexionCola.PublicarNotificacion(componnteconexioncola.NotificacionCancion{
+	go thisF.conexionCola.PublicarNotificacion(componnteconexioncola.NotificacionCancion{
 		Titulo:  objCancion.Titulo,
 		Artista: objCancion.Artista,
 		Genero:  objCancion.Genero,
@@ -38,7 +39,11 @@ func (thisF *FachadaAlmacenamiento) GuardarCancion(objCancion dtos.CancionAlmace
 		Mensaje: "Nueva cancion almacenada: " + objCancion.Titulo + " de " + objCancion.Artista,
 	})
 
-	// guardar archivo y registro en memmoria
-	//delegar en el repositorio
-	return thisF.repo.GuardarCancion(objCancion.Titulo, objCancion.Genero, objCancion.Artista, objCancion.Idioma, data)
+	duracion, err := services.CalcularDuracionMP3(data)
+	if err != nil {
+		fmt.Printf("⚠️ No se pudo calcular la duración: %v. Usando 0.0\n", err)
+		duracion = 0.0 // Valor por defecto si falla el cálculo
+	}
+
+	return thisF.repo.GuardarCancion(objCancion.Titulo, objCancion.Genero, objCancion.Artista, objCancion.Idioma, duracion, data)
 }

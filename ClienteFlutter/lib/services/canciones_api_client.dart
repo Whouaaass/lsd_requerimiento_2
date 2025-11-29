@@ -6,7 +6,15 @@ class CancionesAPIClient {
   final Dio _dio;
 
   CancionesAPIClient({required this.baseURL, Dio? dio})
-    : _dio = dio ?? Dio(BaseOptions(baseUrl: baseURL));
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: baseURL,
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 3),
+            ),
+          );
 
   Future<List<MetadatoCancionDTO>> listarCanciones() async {
     try {

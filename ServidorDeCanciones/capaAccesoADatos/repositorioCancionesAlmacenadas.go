@@ -3,6 +3,7 @@ package capaaccesoadatos
 import (
 	"encoding/json"
 	"fmt"
+
 	"os"
 	"path/filepath"
 	"sync"
@@ -23,12 +24,13 @@ var (
 )
 
 type MetadatoCancion struct {
-	ID                 int32  `json:"id"`
-	Titulo             string `json:"titulo"`
-	Genero             string `json:"genero"`
-	Artista            string `json:"artista"`
-	Idioma             string `json:"idioma"`
-	RutaAlmacenamiento string `json:"ruta-almacenamiento"`
+	ID                 int32   `json:"id"`
+	Titulo             string  `json:"titulo"`
+	Genero             string  `json:"genero"`
+	Artista            string  `json:"artista"`
+	Idioma             string  `json:"idioma"`
+	RutaAlmacenamiento string  `json:"ruta-almacenamiento"`
+	Duracion           float64 `json:"duracion"` // Duración en segundos
 }
 
 // obtiene el ID más alto del catálogo existente
@@ -63,7 +65,7 @@ func GetRepositorioCanciones() *RepositorioCanciones {
 }
 
 // ✅ Guarda o actualiza una canción
-func (r *RepositorioCanciones) GuardarCancion(titulo, genero, artista, idioma string, data []byte) error {
+func (r *RepositorioCanciones) GuardarCancion(titulo, genero, artista, idioma string, duracion float64, data []byte) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -78,7 +80,7 @@ func (r *RepositorioCanciones) GuardarCancion(titulo, genero, artista, idioma st
 	}
 
 	// 🔍 Actualiza catálogo y recibe si fue nuevo o actualizado
-	statusMsg, err := r.agregarAlCatalogo(titulo, genero, artista, idioma, filePath)
+	statusMsg, err := r.agregarAlCatalogo(titulo, genero, artista, idioma, filePath, duracion)
 	if err != nil {
 		return fmt.Errorf("error actualizando catálogo: %v", err)
 	}
@@ -89,7 +91,7 @@ func (r *RepositorioCanciones) GuardarCancion(titulo, genero, artista, idioma st
 }
 
 // ✅ Maneja el catálogo sin duplicar metadatos
-func (r *RepositorioCanciones) agregarAlCatalogo(titulo, genero, artista, idioma, path string) (string, error) {
+func (r *RepositorioCanciones) agregarAlCatalogo(titulo, genero, artista, idioma, path string, duracion float64) (string, error) {
 	catalogPath := catalogo_path
 	var catalogo []MetadatoCancion
 
@@ -110,9 +112,10 @@ func (r *RepositorioCanciones) agregarAlCatalogo(titulo, genero, artista, idioma
 			// 🔄 Actualizar metadatos
 			catalogo[i].Genero = genero
 			catalogo[i].Idioma = idioma
+			catalogo[i].Duracion = duracion
 			data, _ := json.MarshalIndent(catalogo, "", "  ")
 			os.WriteFile(catalogPath, data, 0644)
-			return fmt.Sprintf("🟡 '%s' de '%s' ya existe", titulo, artista), nil
+			return fmt.Sprintf("🟡 '%s' de '%s' ya existe (duración: %.2fs)", titulo, artista, duracion), nil
 		}
 	}
 
@@ -125,6 +128,7 @@ func (r *RepositorioCanciones) agregarAlCatalogo(titulo, genero, artista, idioma
 		Artista:            artista,
 		Idioma:             idioma,
 		RutaAlmacenamiento: path,
+		Duracion:           duracion,
 	}
 	catalogo = append(catalogo, nueva)
 
@@ -133,5 +137,8 @@ func (r *RepositorioCanciones) agregarAlCatalogo(titulo, genero, artista, idioma
 		return "", fmt.Errorf("❌ Error escribiendo el catálogo: %v", err)
 	}
 
-	return fmt.Sprintf("✅ '%s' de '%s' agregada correctamente al catálogo.", titulo, artista), nil
+	// Formatear duración en minutos:segundos para el mensaje
+	minutos := int(duracion / 60)
+	segundos := int(duracion) % 60
+	return fmt.Sprintf("✅ '%s' de '%s' agregada correctamente al catálogo (duración: %d:%02d).", titulo, artista, minutos, segundos), nil
 }
