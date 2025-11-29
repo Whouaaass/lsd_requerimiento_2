@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:grpc/grpc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'generated/serviciosStreaming.pbgrpc.dart';
+import '../generated/serviciosStreaming.pbgrpc.dart';
 
 // Class to hold download progress information
 class DownloadProgress {
@@ -55,11 +56,12 @@ class GrpcAudioSource extends StreamAudioSource {
     // Use 10.0.2.2 for Android emulator to access localhost of host machine
     // Use localhost for iOS simulator or desktop
     // For now defaulting to localhost, user might need to change this based on platform
-    const host = '10.0.2.2';
+    final host = dotenv.env["STREAMING_API_HOST"] ?? "";
+    final port = int.parse(dotenv.env["STREAMING_API_PORT"] ?? "0");
 
     _channel = ClientChannel(
       host,
-      port: 50051,
+      port: port,
       options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
     );
     _client = AudioServiceClient(_channel!);

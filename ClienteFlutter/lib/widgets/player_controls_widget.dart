@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../GrpcAudioSource.dart';
+import '../services/grpc_audio_source.dart';
 
 class PlayerControlsWidget extends StatelessWidget {
   final String songTitle;

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/metadato_cancion_dto.dart';
 import '../generated/serviciosStreaming.pb.dart';
-import '../GrpcAudioSource.dart';
+import '../services/grpc_audio_source.dart';
 import '../widgets/player_controls_widget.dart';
 import '../widgets/listener_chat_widget.dart';
 
@@ -27,7 +28,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // WebSocket URL - configure this based on your server
   // For Android emulator: ws://10.0.2.2:PORT
   // For iOS simulator/desktop: ws://localhost:PORT
-  static const String webSocketUrl = 'ws://10.0.2.2:8080/ws';
+  static final String webSocketUrl = 'ws://${dotenv.env['CANCIONES_API_URL'] ?? ""}/ws';
 
   @override
   void initState() {

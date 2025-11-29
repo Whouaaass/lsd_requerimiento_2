@@ -14,7 +14,7 @@ class CancionesListScreen extends StatefulWidget {
 
 class _CancionesListScreenState extends State<CancionesListScreen> {
   final CancionesAPIClient _client = CancionesAPIClient(
-    baseURL: dotenv.env['API_URL'] ?? 'http://localhost:5000',
+    baseURL: dotenv.env['CANCIONES_API_URL'] ?? 'http://localhost:5000',
   );
   late Future<List<MetadatoCancionDTO>> _cancionesFuture;
 
