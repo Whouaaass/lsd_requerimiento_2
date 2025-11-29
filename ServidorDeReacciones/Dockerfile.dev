@@ -1,0 +1,21 @@
+# Development image using Maven + Java 17
+FROM maven:3.9-eclipse-temurin-17
+
+# Set work directory
+WORKDIR /app
+
+# Copy only the pom first (better cache)
+COPY pom.xml .
+
+# Download dependencies in advance
+RUN mvn -ntp dependency:go-offline
+
+# Copy the rest of the project
+COPY src ./src
+
+# Expose the port used by Spring Boot
+EXPOSE 5011
+
+# Run the application in DEV mode using Maven
+# spring-boot:run enables live reload with devtools
+CMD ["mvn", "-ntp", "spring-boot:run"]

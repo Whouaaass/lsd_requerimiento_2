@@ -31,7 +31,21 @@ services:
     command: sh -c "go run ./main"    
     networks:
       - default
-
+  
+  servidor-reacciones:
+    build:
+      context: ./ServidorDeReacciones
+      dockerfile: Dockerfile.dev
+    container_name: servidorchat-dev
+    ports:
+      - "5011:5011"
+    volumes:
+      - .:/app               # Mount your source code
+      - ~/.m2:/root/.m2      # Cache Maven dependencies (important!)
+    environment:
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload
+    command: mvn -ntp spring-boot:run
+  
   envoy:
     image: envoyproxy/envoy:dev-d23795f4c239087503da27c327448ef0132ca5fb
     volumes:
@@ -42,6 +56,7 @@ services:
     command: envoy -c /etc/envoy/envoy.yaml
     networks:
       - default
+      
 
 networks:
   default:

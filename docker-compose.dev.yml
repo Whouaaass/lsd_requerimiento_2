@@ -96,6 +96,20 @@ services:
       - servidor-canciones
       - servidor-reproducciones
 
+  servidor-reacciones:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: servidorchat-dev
+    ports:
+      - "5011:5011"
+    volumes:
+      - .:/app               # Mount your source code
+      - ~/.m2:/root/.m2      # Cache Maven dependencies (important!)
+    environment:
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload
+    command: mvn -ntp spring-boot:run
+ 
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq
@@ -106,7 +120,10 @@ services:
       - "5672:5672"
       - "15672:15672" # Management UI
     networks:
-      - default
+      - default 
+ 
+  
+
 
 networks:
   default:
