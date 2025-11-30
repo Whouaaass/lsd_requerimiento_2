@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:grpc/grpc.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:spotifake_player/services/app_logger.dart';
 import '../generated/serviciosStreaming.pbgrpc.dart';
+import 'config_service.dart';
 import 'grpc_channel_stub.dart'
     if (dart.library.html) 'grpc_channel_web.dart'
     if (dart.library.io) 'grpc_channel_io.dart';
 
-// Class to hold download progress information
 class DownloadProgress {
   final int bytesDownloaded;
   final int totalBytes;
@@ -60,16 +60,15 @@ class GrpcAudioSource extends StreamAudioSource {
     // Platform-specific configuration:
     // - Web: Uses STREAMING_API_HOST_WEB and STREAMING_API_PORT_WEB (Envoy proxy)
     // - Native: Uses STREAMING_API_HOST and STREAMING_API_PORT (direct gRPC)
-    final host = kIsWeb
-        ? (dotenv.env["STREAMING_API_HOST_WEB"] ?? "localhost")
-        : (dotenv.env["STREAMING_API_HOST"] ?? "localhost");
-    final port = kIsWeb
-        ? int.parse(dotenv.env["STREAMING_API_PORT_WEB"] ?? "8080")
-        : int.parse(dotenv.env["STREAMING_API_PORT"] ?? "50051");
+    final config = ConfigService();
+    final host = kIsWeb ? config.streamingHostWeb : config.streamingHost;
+    final port = kIsWeb ? config.streamingPortWeb : config.streamingPort;
 
-    print("Platform: ${kIsWeb ? 'Web' : 'Native'}");
-    print("Host: $host");
-    print("Port: $port");
+    AppLogger.info(
+      "Platform: ${kIsWeb ? 'Web' : 'Native'}"
+      "Host: $host"
+      "Port: $port",
+    );
 
     // Use platform-specific channel factory
     _channel = createChannel(host, port);
@@ -79,9 +78,9 @@ class GrpcAudioSource extends StreamAudioSource {
     final request = PeticionStreamDTO(idUsuario: 1, cancion: cancion);
 
     try {
-      print("Attempting to connect to gRPC server at $host:$port");
+      AppLogger.info("Attempting to connect to gRPC server at $host:$port");
       final stream = _client!.stremearCancion(request);
-      print("gRPC stream initiated successfully");
+      AppLogger.info("gRPC stream initiated successfully");
 
       await for (var fragment in stream) {
         if (!_controller.isClosed) {
@@ -99,7 +98,7 @@ class GrpcAudioSource extends StreamAudioSource {
           }
         }
       }
-      print("gRPC stream completed successfully");
+      AppLogger.info("gRPC stream completed successfully");
       if (!_controller.isClosed) {
         _controller.close();
       }
@@ -107,14 +106,16 @@ class GrpcAudioSource extends StreamAudioSource {
         _progressController.close();
       }
     } catch (e, stackTrace) {
-      print("❌ Error in gRPC stream: $e");
-      print("Error type: ${e.runtimeType}");
+      AppLogger.error("❌ Error in gRPC stream: $e");
+      AppLogger.error("Error type: ${e.runtimeType}");
       if (e is GrpcError) {
-        print("gRPC Error Code: ${e.code}");
-        print("gRPC Error Message: ${e.message}");
-        print("gRPC Error Details: ${e.details}");
+        AppLogger.error(
+          "gRPC Error Code: ${e.code}"
+          "gRPC Error Message: ${e.message}"
+          "gRPC Error Details: ${e.details}",
+        );
       }
-      print("Stack trace: $stackTrace");
+      AppLogger.error("Stack trace: $stackTrace");
       if (!_controller.isClosed) {
         _controller.addError(e);
       }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:spotifake_player/services/app_logger.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'models/listener_message.dart';
 
@@ -44,26 +45,34 @@ class StompListenerService {
           url: url,
           onConnect: (StompFrame frame) {
             _isConnected = true;
-            _connectionController.add(true);
-            print('✅ STOMP connected successfully');
+            if (!_connectionController.isClosed) {
+              _connectionController.add(true);
+            }
+            AppLogger.info("✅ STOMP connected successfully");
 
             // Subscribe to song channel
             _subscribeToSongChannel(songId);
           },
           onWebSocketError: (dynamic error) {
-            print('❌ WebSocket error: $error');
+            AppLogger.error('❌ WebSocket error: $error');
             _isConnected = false;
-            _connectionController.add(false);
+            if (!_connectionController.isClosed) {
+              _connectionController.add(false);
+            }
           },
           onStompError: (StompFrame frame) {
-            print('❌ STOMP error: ${frame.body}');
+            AppLogger.error('❌ STOMP error: ${frame.body}');
             _isConnected = false;
-            _connectionController.add(false);
+            if (!_connectionController.isClosed) {
+              _connectionController.add(false);
+            }
           },
           onDisconnect: (StompFrame frame) {
             _isConnected = false;
-            _connectionController.add(false);
-            print('🔌 STOMP disconnected');
+            if (!_connectionController.isClosed) {
+              _connectionController.add(false);
+            }
+            AppLogger.info('🔌 STOMP disconnected');
           },
           // Add nickname to connection headers
           stompConnectHeaders: {'nickname': nickname},
@@ -75,9 +84,11 @@ class StompListenerService {
         _stompClient?.activate();
       }
     } catch (e) {
-      print('❌ Error creating STOMP client: $e');
+      AppLogger.error('❌ Error creating STOMP client: $e');
       _isConnected = false;
-      _connectionController.add(false);
+      if (!_connectionController.isClosed) {
+        _connectionController.add(false);
+      }
       rethrow;
     }
   }
@@ -85,7 +96,7 @@ class StompListenerService {
   /// Subscribe to song channel to receive listener activity
   void _subscribeToSongChannel(int songId) {
     if (_stompClient == null || !_isConnected) {
-      print('⚠️ Cannot subscribe: not connected');
+      AppLogger.error('⚠️ Cannot subscribe: not connected');
       return;
     }
 
@@ -94,7 +105,7 @@ class StompListenerService {
 
     // Subscribe to /cancion/{songId} channel
     final destination = '/cancion/$songId';
-    print('📡 Subscribing to $destination');
+    AppLogger.info('📡 Subscribing to $destination');
 
     _subscription = _stompClient?.subscribe(
       destination: destination,
@@ -103,10 +114,14 @@ class StompListenerService {
           try {
             final data = jsonDecode(frame.body ?? '{}');
             final message = ListenerMessage.fromJson(data);
-            _messageController.add(message);
-            print('📨 Received message: ${message.type} from ${message.user}');
+            if (!_messageController.isClosed) {
+              _messageController.add(message);
+            }
+            AppLogger.info(
+              '📨 Received message: ${message.type} from ${message.user}',
+            );
           } catch (e) {
-            print('❌ Error parsing message: $e');
+            AppLogger.error('❌ Error parsing message: $e');
           }
         }
       },
@@ -119,7 +134,7 @@ class StompListenerService {
   /// [reaction] - Reaction type: "like", "heart", "sad", "fun"
   void sendReaction(int songId, String reaction) {
     if (_stompClient == null || !_isConnected) {
-      print('⚠️ Cannot send reaction: not connected');
+      AppLogger.error('⚠️ Cannot send reaction: not connected');
       return;
     }
 
@@ -135,7 +150,7 @@ class StompListenerService {
       body: jsonEncode(message),
     );
 
-    print('📤 Sent reaction: $reaction for song $songId');
+    AppLogger.info('📤 Sent reaction: $reaction for song $songId');
   }
 
   /// Send playing status to the server
@@ -143,7 +158,7 @@ class StompListenerService {
   /// [songId] - Song ID that started playing
   void sendPlayingStatus(int songId) {
     if (_stompClient == null || !_isConnected) {
-      print('⚠️ Cannot send playing status: not connected');
+      AppLogger.warning('⚠️ Cannot send playing status: not connected');
       return;
     }
 
@@ -159,7 +174,7 @@ class StompListenerService {
       body: jsonEncode(message),
     );
 
-    print('▶️ Sent playing status for song $songId');
+    AppLogger.info('▶️ Sent playing status for song $songId');
   }
 
   /// Send stopped status to the server
@@ -167,7 +182,7 @@ class StompListenerService {
   /// [songId] - Song ID that stopped playing
   void sendStoppedStatus(int songId) {
     if (_stompClient == null || !_isConnected) {
-      print('⚠️ Cannot send stopped status: not connected');
+      AppLogger.warning('⚠️ Cannot send stopped status: not connected');
       return;
     }
 
@@ -183,7 +198,7 @@ class StompListenerService {
       body: jsonEncode(message),
     );
 
-    print('⏹️ Sent stopped status for song $songId');
+    AppLogger.info('⏹️ Sent stopped status for song $songId');
   }
 
   /// Disconnect from STOMP server
@@ -197,8 +212,10 @@ class StompListenerService {
     }
 
     _isConnected = false;
-    _connectionController.add(false);
-    print('👋 Disconnected from STOMP server');
+    if (!_connectionController.isClosed) {
+      _connectionController.add(false);
+    }
+    AppLogger.info('👋 Disconnected from STOMP server');
   }
 
   /// Dispose of resources

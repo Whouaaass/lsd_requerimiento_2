@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/canciones_api/models/metadato_cancion_dto.dart';
 import '../services/canciones_api/canciones_api_client.dart';
-
 import 'player_screen.dart';
+import 'settings_screen.dart';
 
 class CancionesListScreen extends StatefulWidget {
   const CancionesListScreen({super.key});
@@ -13,9 +12,7 @@ class CancionesListScreen extends StatefulWidget {
 }
 
 class _CancionesListScreenState extends State<CancionesListScreen> {
-  final CancionesAPIClient _client = CancionesAPIClient(
-    baseURL: dotenv.env['CANCIONES_API_URL'] ?? 'http://localhost:5000',
-  );
+  final CancionesAPIClient _client = CancionesAPIClient();
   late Future<List<MetadatoCancionDTO>> _cancionesFuture;
 
   @override
@@ -27,7 +24,20 @@ class _CancionesListScreenState extends State<CancionesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lista de Canciones')),
+      appBar: AppBar(
+        title: const Text('Lista de Canciones'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: FutureBuilder<List<MetadatoCancionDTO>>(
         future: _cancionesFuture,
         builder: (context, snapshot) {

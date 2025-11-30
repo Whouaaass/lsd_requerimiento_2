@@ -187,16 +187,7 @@ class _FloatingEmojiWidgetState extends State<_FloatingEmojiWidget>
               scale: _scaleAnimation.value,
               child: Text(
                 widget.emoji.emoji,
-                style: const TextStyle(
-                  fontSize: 48,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 10,
-                      color: Colors.black26,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
-                ),
+                style: const TextStyle(fontSize: 48),
               ),
             ),
           ),

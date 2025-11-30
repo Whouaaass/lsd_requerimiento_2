@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:spotifake_player/services/app_logger.dart';
 import '../services/reacciones_api/models/listener_message.dart';
 import '../services/reacciones_api/stomp_listener_service.dart';
 import 'floating_emoji_overlay.dart';
@@ -58,7 +59,7 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
         }
       },
       onError: (error) {
-        print('Message stream error: $error');
+        AppLogger.error('Message stream error: $error');
       },
     );
 
@@ -78,7 +79,7 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
     _stompService
         .connect(widget.webSocketUrl, widget.nickname, widget.songId)
         .catchError((error) {
-          print('Failed to connect: $error');
+          AppLogger.error('Failed to connect: $error');
           if (mounted) {
             setState(() {
               _connectionStatus = 'Failed to connect';
@@ -136,7 +137,7 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
     _connectionSubscription?.cancel();
     // Don't await - just fire and forget since dispose() can't be async
     _stompService.dispose().catchError((e) {
-      print('Error disposing STOMP service: $e');
+      AppLogger.error('Error disposing STOMP service: $e');
     });
     _scrollController.dispose();
     super.dispose();
@@ -170,7 +171,7 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Listener Activity',
+                    'Actividad del oyente',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -187,6 +188,40 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
             ),
           ),
 
+          // Reaction Buttons
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _ReactionButton(
+                  emoji: '👍',
+                  label: 'Like',
+                  onPressed: _isConnected ? () => _sendReaction('like') : null,
+                ),
+                _ReactionButton(
+                  emoji: '❤️',
+                  label: 'Heart',
+                  onPressed: _isConnected ? () => _sendReaction('heart') : null,
+                ),
+                _ReactionButton(
+                  emoji: '😢',
+                  label: 'Sad',
+                  onPressed: _isConnected ? () => _sendReaction('sad') : null,
+                ),
+                _ReactionButton(
+                  emoji: '😄',
+                  label: 'Fun',
+                  onPressed: _isConnected ? () => _sendReaction('fun') : null,
+                ),
+              ],
+            ),
+          ),
+
           // Messages List
           Container(
             height: 300,
@@ -195,8 +230,8 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
                 ? Center(
                     child: Text(
                       _isConnected
-                          ? 'No activity yet...'
-                          : 'Waiting for connection...',
+                          ? 'No actividad todavía...'
+                          : 'Esperando conexión...',
                       style: const TextStyle(color: Colors.grey),
                     ),
                   )
@@ -240,40 +275,6 @@ class ListenerChatWidgetState extends State<ListenerChatWidget> {
                     },
                   ),
           ),
-
-          // Reaction Buttons
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _ReactionButton(
-                  emoji: '👍',
-                  label: 'Like',
-                  onPressed: _isConnected ? () => _sendReaction('like') : null,
-                ),
-                _ReactionButton(
-                  emoji: '❤️',
-                  label: 'Heart',
-                  onPressed: _isConnected ? () => _sendReaction('heart') : null,
-                ),
-                _ReactionButton(
-                  emoji: '😢',
-                  label: 'Sad',
-                  onPressed: _isConnected ? () => _sendReaction('sad') : null,
-                ),
-                _ReactionButton(
-                  emoji: '😄',
-                  label: 'Fun',
-                  onPressed: _isConnected ? () => _sendReaction('fun') : null,
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -312,7 +313,7 @@ class _ReactionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: onPressed != null ? Colors.white : Colors.grey.shade200,
+          color: onPressed != null ? Colors.white : Colors.blue.shade200,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: onPressed != null

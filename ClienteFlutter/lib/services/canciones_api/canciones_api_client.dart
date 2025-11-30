@@ -1,20 +1,15 @@
 import 'package:dio/dio.dart';
+import '../config_service.dart';
 import 'models/metadato_cancion_dto.dart';
 
 class CancionesAPIClient {
-  final String baseURL;
   final Dio _dio;
 
-  CancionesAPIClient({required this.baseURL, Dio? dio})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: baseURL,
-              connectTimeout: const Duration(seconds: 5),
-              receiveTimeout: const Duration(seconds: 3),
-            ),
-          );
+  CancionesAPIClient() : _dio = Dio() {
+    _dio.options.baseUrl = ConfigService().apiBaseUrl;
+    _dio.options.connectTimeout = const Duration(seconds: 5);
+    _dio.options.receiveTimeout = const Duration(seconds: 3);
+  }
 
   Future<List<MetadatoCancionDTO>> listarCanciones() async {
     try {

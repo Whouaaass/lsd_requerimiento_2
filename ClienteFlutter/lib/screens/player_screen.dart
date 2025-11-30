@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:spotifake_player/services/app_logger.dart';
 import '../services/canciones_api/models/metadato_cancion_dto.dart';
 import '../generated/serviciosStreaming.pb.dart';
 import '../services/grpc_audio_source.dart';
 import '../widgets/player_controls_widget.dart';
 import '../widgets/listener_chat_widget.dart';
 import '../widgets/floating_emoji_overlay.dart';
+import '../services/config_service.dart';
 
 class PlayerScreen extends StatefulWidget {
   final MetadatoCancionDTO cancion;
@@ -30,11 +31,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   final GlobalKey<ListenerChatWidgetState> _chatWidgetKey =
       GlobalKey<ListenerChatWidgetState>();
 
-  // WebSocket URL - configure this based on your server
-  // For Android emulator: ws://10.0.2.2:PORT
-  // For iOS simulator/desktop: ws://localhost:PORT
-  static final String webSocketUrl =
-      'ws://${dotenv.env['REACCIONES_API_URL'] ?? ""}/ws-raw';
+  // WebSocket URL from ConfigService
+  final String webSocketUrl = ConfigService().stompUrl;
 
   @override
   void initState() {
@@ -101,7 +99,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
       _player.play();
     } catch (e) {
-      print("Error loading audio: $e");
+      AppLogger.error("Error loading audio: $e");
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -141,7 +139,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return FloatingEmojiOverlay(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Now Playing'), elevation: 2),
+        appBar: AppBar(title: const Text('Reproduciendo'), elevation: 2),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -163,7 +161,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 key: _chatWidgetKey,
                 webSocketUrl: webSocketUrl,
                 songId: widget.cancion.id,
-                nickname: 'User', // TODO: Get from user profile/settings
+                nickname: ConfigService().nickname ?? 'Anonymous',
               ),
 
               const SizedBox(height: 20),

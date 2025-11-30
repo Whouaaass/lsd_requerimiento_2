@@ -76,7 +76,7 @@ class PlayerControlsWidget extends StatelessWidget {
             // Download Progress (text only)
             if (downloadProgress != null) ...[
               Text(
-                'Downloaded: ${_formatBytes(downloadProgress!.bytesDownloaded)}',
+                'Descargado: ${_formatBytes(downloadProgress!.bytesDownloaded)}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.green,
@@ -88,7 +88,7 @@ class PlayerControlsWidget extends StatelessWidget {
 
             // Playback Progress Section
             const Text(
-              'Playback Progress',
+              'Progreso de reproducción',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
