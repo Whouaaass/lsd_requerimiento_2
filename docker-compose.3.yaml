@@ -44,10 +44,26 @@ services:
       - ~/.m2:/root/.m2
     environment:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload
+      - SERVIDOR_PAGOS_URL=servidor-pagos:9091
     command: mvn -ntp spring-boot:run
     networks:
       - default
   
+  servidor-pagos:
+    build:
+      context: ./ServidorDePagos
+      dockerfile: Dockerfile.dev    
+    ports:
+      - "9091:9091"
+    volumes:
+      - ./ServidorDePagos:/app
+      - ~/.m2:/root/.m2
+    environment:
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true # This is for hot-reload      
+    command: mvn -ntp spring-boot:run
+    networks:
+      - default
+
   envoy:
     image: envoyproxy/envoy:dev-d23795f4c239087503da27c327448ef0132ca5fb
     volumes:

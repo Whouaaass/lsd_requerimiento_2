@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:spotifake_player/services/app_logger.dart';
@@ -34,11 +36,66 @@ class _PlayerScreenState extends State<PlayerScreen> {
   // WebSocket URL from ConfigService
   final String webSocketUrl = ConfigService().stompUrl;
 
+  StreamSubscription? _notificationSubscription;
+
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    
     _initAudio();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupNotificationListener();
+    });
+  }
+
+  void _setupNotificationListener() {
+    final stompService = _chatWidgetKey.currentState?.stompService;
+    if (stompService == null) {
+      AppLogger.error(
+        "StompService is null. Cannot subscribe to notifications.",
+      );
+      return;
+    }
+
+    // Suscribirse al nuevo stream de notificaciones
+    _notificationSubscription = stompService.notificationStream.listen(
+      (notification) {
+        AppLogger.warning(
+          '🚨 Notification Received: ${notification.type} - ${notification.content}',
+        );
+        print("hola");
+        // Mostrar la notificación al usuario
+        _showUserNotification(notification.content);
+      },
+      onError: (error) {
+        AppLogger.error('Notification Stream Error: $error');
+      },
+    );
+  }
+
+  void _showUserNotification(String message) {
+    AppLogger.debug("se maneja la notificación del usuario");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🛑 NOTIFICACIÓN: $message',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+
+      // Opcional: Pausar la música si la notificación es crítica (ej. sin tokens)
+      if (_isPlaying) {
+        _player.pause();
+        _chatWidgetKey.currentState?.stompService.sendStoppedStatus(
+          widget.cancion.id,
+        );
+      }
+    }
   }
 
   Future<void> _initAudio() async {
@@ -132,6 +189,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void dispose() {
     _player.dispose();
     _audioSource.dispose();
+    _notificationSubscription?.cancel();
     super.dispose();
   }
 
@@ -139,7 +197,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return FloatingEmojiOverlay(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Reproduciendo'), elevation: 2),
+        appBar: AppBar(
+          title: const Text('Reproduciendo'),
+          elevation: 2,
+          actions: [
+            IconButton(
+              onPressed: () {
+                _chatWidgetKey.currentState?.stompService
+                    .sendTestNotification();
+              },
+              icon: const Icon(Icons.edit),
+            ),
+          ],
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [

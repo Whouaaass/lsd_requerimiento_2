@@ -3,17 +3,22 @@ import 'dart:convert';
 import 'package:spotifake_player/services/app_logger.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import 'models/listener_message.dart';
+import 'models/user_notification.dart';
 
 /// Service to manage STOMP connection for listener activity
 /// Based on JavaScript ClienteWebSocket implementation
 class StompListenerService {
   StompClient? _stompClient;
-  StompUnsubscribe? _subscription;
+  StompUnsubscribe? _songSubscription;
+  StompUnsubscribe? _userNotificationSubscription;
 
   final StreamController<ListenerMessage> _messageController =
       StreamController<ListenerMessage>.broadcast();
   final StreamController<bool> _connectionController =
       StreamController<bool>.broadcast();
+  // Stream para notificaciones privadas de usuario (ej. tokens)
+  final StreamController<UserNotification> _notificationController =
+      StreamController<UserNotification>.broadcast(); // *** NUEVO ***
 
   bool _isConnected = false;
   String? _currentNickname;
@@ -23,6 +28,9 @@ class StompListenerService {
 
   /// Stream of connection state (true = connected, false = disconnected)
   Stream<bool> get connectionStateStream => _connectionController.stream;
+
+  Stream<UserNotification> get notificationStream =>
+      _notificationController.stream;
 
   /// Current connection status
   bool get isConnected => _isConnected;
@@ -52,6 +60,7 @@ class StompListenerService {
 
             // Subscribe to song channel
             _subscribeToSongChannel(songId);
+            _subscribeToUserNotifications();
           },
           onWebSocketError: (dynamic error) {
             AppLogger.error('❌ WebSocket error: $error');
@@ -101,13 +110,13 @@ class StompListenerService {
     }
 
     // Unsubscribe from previous channel if exists
-    _subscription?.call();
+    _songSubscription?.call();
 
     // Subscribe to /cancion/{songId} channel
     final destination = '/cancion/$songId';
     AppLogger.info('📡 Subscribing to $destination');
 
-    _subscription = _stompClient?.subscribe(
+    _songSubscription = _stompClient?.subscribe(
       destination: destination,
       callback: (StompFrame frame) {
         if (frame.body != null) {
@@ -122,6 +131,49 @@ class StompListenerService {
             );
           } catch (e) {
             AppLogger.error('❌ Error parsing message: $e');
+          }
+        }
+      },
+    );
+  }
+
+  void _subscribeToUserNotifications() {
+    if (_stompClient == null || !_isConnected) {
+      AppLogger.error(
+        '⚠️ Cannot subscribe to user notifications: not connected',
+      );
+      return;
+    }
+
+    _userNotificationSubscription?.call();
+
+    // El destino es /user/queue/notifications (como definiste en Spring: /queue/notifications)
+    final destination = '/user/queue/notifications';
+    AppLogger.info('📡 Subscribing to user notifications at $destination');
+
+    _userNotificationSubscription = _stompClient?.subscribe(
+      destination: destination,
+      callback: (StompFrame frame) {
+        if (frame.body != null) {
+          try {
+            final data = jsonDecode(frame.body ?? '{}');
+            // Usamos el nuevo modelo: UserNotification
+            final notification = UserNotification.fromJson(data);
+
+            // Enviamos al nuevo StreamController
+            if (!_notificationController.isClosed) {
+              print("añadido al controller");
+
+              _notificationController.add(notification);
+            }
+            print(
+              '🔔 Received USER NOTIFICATION (Type: ${notification.type}, Content: ${notification.content})',
+            );
+            AppLogger.warning(
+              '🔔 Received USER NOTIFICATION (Type: ${notification.type}, Content: ${notification.content})',
+            );
+          } catch (e) {
+            AppLogger.error('❌ Error parsing user notification message: $e');
           }
         }
       },
@@ -201,10 +253,33 @@ class StompListenerService {
     AppLogger.info('⏹️ Sent stopped status for song $songId');
   }
 
+  void sendTestNotification() {
+    if (_stompClient == null || !_isConnected) {
+      AppLogger.warning('⚠️ Cannot send test notification: not connected');
+      return;
+    }
+
+    final message = {
+      'type': 'test',
+      'content': 'This is a test notification',
+      'userNickname': _currentNickname ?? 'Anonymous',
+    };
+
+    _stompClient?.send(
+      destination: '/apiCanciones/test/user',
+      body: jsonEncode(message),
+    );
+
+    AppLogger.info('📤 Sent test notification');
+  }
+
   /// Disconnect from STOMP server
   Future<void> disconnect() async {
-    _subscription?.call();
-    _subscription = null;
+    _songSubscription?.call();
+    _songSubscription = null;
+
+    _userNotificationSubscription?.call();
+    _userNotificationSubscription = null;
 
     if (_stompClient != null) {
       _stompClient?.deactivate();
