@@ -74,7 +74,7 @@ public class pagoService {
         }
 
         // ---- 2. Simular fallo de pago (por ejemplo 30% de probabilidad) ----
-        boolean fallo = random.nextDouble() < 0.3;
+        boolean fallo = random.nextDouble() < 0.9;
         if (fallo) {
             log.warn("Simulando fallo de pago para usuario {}", dto.getUsuario());
             return false; // el caller (micro de reacciones) decidirá reintentar

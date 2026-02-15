@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/android/app/src/main/res/xml/network_security_config.xml">
+        <config>
+          <theme>@android:style/Theme</theme>
+        </config>
+      </layout>
+    </layouts>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e5fb51b9-fd5f-4692-a6b9-493af6955f44" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../ClienteFlutter/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteFlutter/android/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteFlutter/android/app/src/main/res/xml/network_security_config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteFlutter/android/app/src/main/res/xml/network_security_config.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteMobile/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteMobile/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteMobile/app/audio-streaming-test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteMobile/app/audio-streaming-test.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteMobile/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteMobile/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteMobile/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteMobile/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ClienteMobile/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/../ClienteMobile/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ServidorDePagos/src/main/java/unicauca/edu/co/pagos/service/pagoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../ServidorDePagos/src/main/java/unicauca/edu/co/pagos/service/pagoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/AndroidProjectSystem.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/appInsightsSettings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/codeStyles/Project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/deploymentTargetSelector.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/deviceManager.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/migrations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/runConfigurations.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/studiobot.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.kotlin/errors/errors-1763321723625.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/proguard-rules.pro" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/androidTest/java/co/edu/unicauca/spotifake_player/ExampleInstrumentedTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/MainActivity.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/network/GrpcClient.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/player/AudioPlayer.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/player/GrpcPlayerDataSource.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/player/PlaybackState.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/repository/AudioStreamRepository.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/ui/screens/StreamingPlayerScreen.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/ui/theme/Color.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/ui/theme/Theme.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/ui/theme/Type.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/java/co/edu/unicauca/spotifake_player/viewmodel/StreamingPlayerViewModel.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/drawable/ic_launcher_background.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/drawable/ic_launcher_foreground.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-hdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-mdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/raw/sample_song.mp3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/values/colors.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/values/strings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/values/themes.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/xml/backup_rules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/main/res/xml/data_extraction_rules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/app/src/test/java/co/edu/unicauca/spotifake_player/ExampleUnitTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/build.gradle.kts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradle/libs.versions.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpotifakePlayerAndroid/settings.gradle.kts" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="main.dart" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/main.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+        <option value="resourceFile" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="35ZOUwtY1ud0n8NJ0ijhM8X6voU" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1" />
+    <panes>
+      <pane id="ProjectPane">
+        <option name="show-excluded-files" value="false" />
+      </pane>
+    </panes>
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Flutter.main.dart.executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "entrega-final",
+    "io.flutter.project.isFirstOpen": "true",
+    "io.flutter.reload.alreadyRun": "true",
+    "last_opened_file_path": "/home/frdy/Universidad/sistemas-distribuidos/lsd_requerimiento_2/spotifake_player",
+    "settings.editor.selected.configurable": "emulator",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e5fb51b9-fd5f-4692-a6b9-493af6955f44" name="Changes" comment="" />
+      <created>1763314147891</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763314147891</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+    </layout>
+  </component>
+</project>
